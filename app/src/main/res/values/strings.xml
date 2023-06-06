@@ -3,4 +3,7 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
+    <string name="permission_granted">Permission for Bluetooth granted!</string>
+    <string name="permission_required">Permission for Bluetooth required...</string>
+    <string name="ok">OK</string>
 </resources>
