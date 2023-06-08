@@ -1,5 +1,6 @@
 package io.tripovan.voltage.ui.home
 
+import android.bluetooth.BluetoothDevice
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -8,8 +9,12 @@ import androidx.lifecycle.ViewModel
 
 class HomeViewModel : ViewModel() {
 
-    private val _text = MutableLiveData<String>().apply {
-        value = "This is home Fragment"
+    private val _myData = MutableLiveData<List<BluetoothDevice>>()
+
+    val myData: LiveData<List<BluetoothDevice>>
+        get() = _myData
+
+    fun updateData(data: List<BluetoothDevice>) {
+        _myData.value = data
     }
-    val text: LiveData<String> = _text
 }
