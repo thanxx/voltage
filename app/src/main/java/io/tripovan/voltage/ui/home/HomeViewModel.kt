@@ -6,15 +6,21 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 
-
 class HomeViewModel : ViewModel() {
 
-    private val _myData = MutableLiveData<List<BluetoothDevice>>()
+    private val _devicesList = MutableLiveData<List<BluetoothDevice>>()
+    private val _selectedDevice = MutableLiveData<String>()
 
-    val myData: LiveData<List<BluetoothDevice>>
-        get() = _myData
+    val devicesList: LiveData<List<BluetoothDevice>>
+        get() = _devicesList
 
-    fun updateData(data: List<BluetoothDevice>) {
-        _myData.value = data
+    val selectedDevice: LiveData<String> get() = _selectedDevice
+
+    fun updateDevicesList(data: List<BluetoothDevice>) {
+        _devicesList.value = data
+    }
+
+    fun updateSelectedDevice(device: String) {
+        _selectedDevice.value = "Selected device: $device"
     }
 }
