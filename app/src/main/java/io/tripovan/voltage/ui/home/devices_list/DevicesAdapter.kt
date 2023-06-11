@@ -6,17 +6,18 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.internal.ContextUtils.getActivity
 import io.tripovan.voltage.R
 import io.tripovan.voltage.ui.home.HomeViewModel
 
 class DevicesAdapter(private var dataList: List<BluetoothDevice>,fragment: Fragment) : RecyclerView.Adapter<DevicesViewHolder>() {
 
     lateinit var context: Context
+    var fragment = fragment
     val homeViewModel =
         ViewModelProvider(fragment).get(HomeViewModel::class.java)
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DevicesViewHolder {
@@ -38,6 +39,12 @@ class DevicesAdapter(private var dataList: List<BluetoothDevice>,fragment: Fragm
             editor.apply()
             homeViewModel.updateSelectedDevice(adapterAddress)
             Toast.makeText(context, dataList[position].name, Toast.LENGTH_SHORT).show()
+
+            // Redirect to settings if we have no host
+            val navView: BottomNavigationView =
+                fragment.requireActivity().findViewById(R.id.nav_view);
+            //navView.menu.findItem(R.id.navigation_dashboard).setChecked(true)
+            navView.selectedItemId = R.id.navigation_dashboard
         }
     }
 

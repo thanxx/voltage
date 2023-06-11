@@ -1,76 +1,47 @@
 package io.tripovan.voltage.ui.home
 
-import android.Manifest
-import android.annotation.SuppressLint
-import android.content.pm.PackageManager
-import android.os.Build
+import android.content.ComponentName
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import android.widget.Toast
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import io.tripovan.voltage.databinding.FragmentHomeBinding
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
+import android.os.IBinder
 import android.util.Log
+import androidx.core.content.ContextCompat.startForegroundService
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import io.tripovan.voltage.MainActivity
+import io.tripovan.voltage.bluetooth.BluetoothManager
+import io.tripovan.voltage.bluetooth.BluetoothService
 import io.tripovan.voltage.ui.home.devices_list.DevicesAdapter
 
 class HomeFragment : Fragment() {
     private lateinit var devicesView: RecyclerView
     private lateinit var adapter: DevicesAdapter
-
-    @SuppressLint("MissingPermission")
-    fun listPairedBluetoothDevices(context: Context): List<BluetoothDevice> {
-        val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
-        val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter?.bondedDevices
-        val deviceList = mutableListOf<BluetoothDevice>()
-        pairedDevices?.let {
-            for (device: BluetoothDevice in it) {
-                deviceList.add(device)
-            }
-        }
-        return deviceList
-    }
-
-    // Example usage
-
-
     private var _binding: FragmentHomeBinding? = null
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
 
-    private fun getPairedDevices(): List<BluetoothDevice> {
-        if (context?.let { it1 ->
-                ContextCompat.checkSelfPermission(
-                    it1,
-                    Manifest.permission.BLUETOOTH_CONNECT
-                )
-            } == PackageManager.PERMISSION_DENIED) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                activity?.let { it1 ->
-                    ActivityCompat.requestPermissions(
-                        it1,
-                        arrayOf(Manifest.permission.BLUETOOTH_CONNECT),
-                        2
-                    )
-                }
-            }
-            Toast.makeText(requireContext(), "Granted!", Toast.LENGTH_SHORT).show()
-            return listPairedBluetoothDevices(requireContext())
-        }
-        return emptyList()
-    }
+    private lateinit var bluetoothService: BluetoothService
+    private var bound: Boolean = false
 
+    private val connection = object : ServiceConnection {
+        override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            val binder = service as BluetoothService.LocalBinder
+            bluetoothService = binder.getService()
+            bound = true
+        }
+
+        override fun onServiceDisconnected(arg0: ComponentName) {
+            bound = false
+        }
+    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -87,20 +58,30 @@ class HomeFragment : Fragment() {
 
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
-//        val button = binding.button
-        homeViewModel.updateDevicesList(getPairedDevices())
+        val button = binding.connect
+        button.visibility = View.GONE
+
+        val bluetoothManager = BluetoothManager()
+        homeViewModel.updateDevicesList(bluetoothManager.getPairedDevices())
+
+
         if (adapterAddress != null) {
             homeViewModel.updateSelectedDevice(adapterAddress)
+//            button.visibility = View.VISIBLE
+//            val bluetoothServiceIntent = Intent(context, BluetoothService::class.java)
+//            bluetoothServiceIntent.putExtra("address", adapterAddress)
+//            button.setOnClickListener {
+//
+//            }
+//        } else {
+//            button.visibility = View.GONE
         }
 
 
-//        button.setOnClickListener {
-//            homeViewModel.updateDevicesList(getPairedDevices())
-//        }
+
 
         devicesView = binding.devices
         adapter = DevicesAdapter(emptyList(), this) // Pass an empty list initially
-
         devicesView.adapter = adapter
         devicesView.layoutManager = LinearLayoutManager(requireContext())
 
