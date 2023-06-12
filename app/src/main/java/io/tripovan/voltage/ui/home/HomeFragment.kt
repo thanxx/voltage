@@ -21,6 +21,7 @@ import io.tripovan.voltage.MainActivity
 import io.tripovan.voltage.bluetooth.BluetoothManager
 import io.tripovan.voltage.bluetooth.BluetoothService
 import io.tripovan.voltage.ui.home.devices_list.DevicesAdapter
+import java.lang.Exception
 
 class HomeFragment : Fragment() {
     private lateinit var devicesView: RecyclerView
@@ -28,20 +29,6 @@ class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var bluetoothService: BluetoothService
-    private var bound: Boolean = false
-
-    private val connection = object : ServiceConnection {
-        override fun onServiceConnected(className: ComponentName, service: IBinder) {
-            val binder = service as BluetoothService.LocalBinder
-            bluetoothService = binder.getService()
-            bound = true
-        }
-
-        override fun onServiceDisconnected(arg0: ComponentName) {
-            bound = false
-        }
-    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -60,28 +47,22 @@ class HomeFragment : Fragment() {
         val root: View = binding.root
         val button = binding.connect
         button.visibility = View.GONE
-
-        val bluetoothManager = BluetoothManager()
-        homeViewModel.updateDevicesList(bluetoothManager.getPairedDevices())
+        try {
+            val bluetoothManager = adapterAddress?.let { BluetoothManager(it) }
+            if (bluetoothManager != null) {
+                homeViewModel.updateDevicesList(bluetoothManager.getPairedDevices())
+            }
+        } catch (e: Exception) {
+            e.message?.let { Log.e("HOME", it) }
+        }
 
 
         if (adapterAddress != null) {
             homeViewModel.updateSelectedDevice(adapterAddress)
-//            button.visibility = View.VISIBLE
-//            val bluetoothServiceIntent = Intent(context, BluetoothService::class.java)
-//            bluetoothServiceIntent.putExtra("address", adapterAddress)
-//            button.setOnClickListener {
-//
-//            }
-//        } else {
-//            button.visibility = View.GONE
         }
 
-
-
-
         devicesView = binding.devices
-        adapter = DevicesAdapter(emptyList(), this) // Pass an empty list initially
+        adapter = DevicesAdapter(emptyList(), this)
         devicesView.adapter = adapter
         devicesView.layoutManager = LinearLayoutManager(requireContext())
 

@@ -1,26 +1,29 @@
 package io.tripovan.voltage.ui.dashboard
 
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import io.tripovan.voltage.databinding.FragmentDashboardBinding
-import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import io.tripovan.voltage.R
+import io.tripovan.voltage.bluetooth.BluetoothManager
+import io.tripovan.voltage.databinding.FragmentDashboardBinding
 
 
 class DashboardFragment : Fragment() {
-    val cellValues = arrayOf(4.086, 4.086, 4.084, 4.089, 4.085, 4.087, 4.091, 4.088, 4.092, 4.091, 4.091, 4.092, 4.091, 4.092, 4.09, 4.092, 4.087, 4.089, 4.091, 4.089, 4.089, 4.091, 4.089, 4.092, 4.091, 4.09, 4.09, 4.091, 4.088, 4.086, 4.09, 4.086, 4.086, 4.091, 4.089, 4.085, 4.09, 4.09, 4.09, 4.091, 4.087, 4.089, 4.09, 4.091, 4.092, 4.091, 4.091, 4.091, 4.091, 4.091, 4.094, 4.09, 4.091, 4.095, 4.095, 4.094, 4.094, 4.091, 4.094, 4.094, 4.094, 4.096, 4.088, 4.091, 4.09, 4.09, 4.09, 4.091, 4.089, 4.087, 4.089, 4.092, 4.092, 4.091, 4.092, 4.094, 4.094, 4.092, 4.094, 4.089, 4.091, 4.091, 4.091, 4.091, 4.092, 4.091, 4.092, 4.097, 4.092, 4.094, 4.094, 4.094, 4.095, 4.094, 4.092)
+
     private var _binding: FragmentDashboardBinding? = null
 
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -34,41 +37,63 @@ class DashboardFragment : Fragment() {
         _binding = FragmentDashboardBinding.inflate(inflater, container, false)
         val root: View = binding.root
         val textView: TextView = binding.textDashboard
-        dashboardViewModel.text.observe(viewLifecycleOwner) {
+        dashboardViewModel.summary.observe(viewLifecycleOwner) {
             textView.text = it
         }
 
-        // Create the BarChart
-        val barChart: BarChart = binding.barChart;
+        val sharedPref = context?.getSharedPreferences("voltage_settings", Context.MODE_PRIVATE)
+        val adapterAddress = sharedPref?.getString("adapter_address", null)
 
-        // Create data entries for the BarChart
-        val entries = mutableListOf<BarEntry>()
-        for (index in cellValues.indices) {
-            entries.add(BarEntry(index.toFloat(), cellValues[index].toFloat()))
+        val button = binding.scan
+        if (adapterAddress == null) {
+            button.text = "Select OBD2 adapter"
+            button.setOnClickListener {
+                val navView: BottomNavigationView =
+                    requireActivity().findViewById(R.id.nav_view)
+                navView.selectedItemId = R.id.navigation_home
+            }
+        } else {
+            button.text = "Scan"
+            button.setOnClickListener {
+                try {
+                    dashboardViewModel.updateCells(
+                        BluetoothManager(adapterAddress).scan().get("cell_voltages") as List<Double>
+                    )
+                } catch (e: Exception) {
+                    Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
+                }
+            }
         }
 
 
-        // Create a BarDataSet with the entries
-        val dataSet = BarDataSet(entries, "BarDataSet")
-        dataSet.color = Color.BLUE
+        // Create the BarChart
+        val barChart: BarChart = binding.barChart
+        dashboardViewModel.cells.observe(viewLifecycleOwner) {
+            val entries = mutableListOf<BarEntry>()
+            for (index in it.indices) {
+                entries.add(BarEntry(index.toFloat(), it[index].toFloat()))
+            }
+            val dataSet = BarDataSet(entries, "BarDataSet")
+            dataSet.color = Color.BLUE
 
-        // Create a BarData object with the dataSet
-        val data = BarData(dataSet)
-        data.barWidth = 0.9f
+            // Create a BarData object with the dataSet
+            val data = BarData(dataSet)
+            data.barWidth = 0.9f
 
-        // Set the data to the BarChart
-        barChart.data = data
+            // Set the data to the BarChart
+            barChart.data = data
 
-        // Customize the appearance of the BarChart
-        barChart.setFitBars(true)
-        barChart.description.isEnabled = false
-        barChart.xAxis.isEnabled = false
-        barChart.axisRight.isEnabled = false
-        barChart.legend.isEnabled = false
+            // Customize the appearance of the BarChart
+            barChart.setFitBars(true)
+            barChart.setDrawValueAboveBar(true)
+            barChart.description.isEnabled = false
+            barChart.xAxis.isEnabled = false
+            barChart.axisRight.isEnabled = false
+            barChart.legend.isEnabled = false
 
-
-        // Refresh the BarChart
-        barChart.invalidate()
+            // Refresh the BarChart
+            barChart.invalidate()
+        }
         return root
     }
 
@@ -76,6 +101,4 @@ class DashboardFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
-
-
 }
