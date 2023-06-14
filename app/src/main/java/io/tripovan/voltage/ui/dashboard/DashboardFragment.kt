@@ -16,6 +16,7 @@ import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import io.tripovan.voltage.App
 import io.tripovan.voltage.R
 import io.tripovan.voltage.bluetooth.BluetoothManager
 import io.tripovan.voltage.data.ScanResult
@@ -56,7 +57,7 @@ class DashboardFragment : Fragment() {
             button.setOnClickListener {
                 val navView: BottomNavigationView =
                     requireActivity().findViewById(R.id.nav_view)
-                navView.selectedItemId = R.id.navigation_home
+                navView.selectedItemId = R.id.navigation_settings
             }
         } else {
             button.text = "Scan"
@@ -124,7 +125,7 @@ class DashboardFragment : Fragment() {
 
     suspend fun showToast(message: String) {
         withContext(Dispatchers.Main) {
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            Toast.makeText(App.instance.applicationContext, message, Toast.LENGTH_SHORT).show()
         }
     }
 

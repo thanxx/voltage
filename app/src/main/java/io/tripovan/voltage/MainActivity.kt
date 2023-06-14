@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
             }
             // BT OK
         } else {
-            Toast.makeText(this@MainActivity, "Bluetooth error, please check permissions", Toast.LENGTH_SHORT)
+            Toast.makeText(this@MainActivity, "Bluetooth error, please check permissions", Toast.LENGTH_SHORT).show()
         }
         layout = binding.navView
         binding.loadingPanel.visibility = View.GONE
@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
         // menu should be considered as top level destinations.
         val appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications
+                R.id.navigation_settings, R.id.navigation_dashboard, R.id.navigation_notifications
             )
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
