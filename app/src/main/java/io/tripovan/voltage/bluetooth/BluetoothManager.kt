@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.util.Log
+import io.tripovan.voltage.data.ScanResult
 import org.json.JSONObject
 import java.io.IOException
 import java.io.InputStream
@@ -19,7 +20,7 @@ class BluetoothManager constructor(private val address: String) {
 
     private val bluetoothAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
     private lateinit var device: BluetoothDevice
-    private var bluetoothSocket: BluetoothSocket
+    var bluetoothSocket: BluetoothSocket
 
     init {
         bluetoothSocket = getSocket()
@@ -57,34 +58,28 @@ class BluetoothManager constructor(private val address: String) {
     }
 
     @SuppressLint("MissingPermission")
-    fun scan(): JSONObject {
-        val results = JSONObject()
-        try {
-            if (!bluetoothSocket.isConnected) {
-                bluetoothSocket.connect()
-            }
-            if (bluetoothSocket.isConnected) {
-                readObd(ObdCommands.obdAtz)
-                readObd(ObdCommands.obdAte)
-                readObd(ObdCommands.obdAtsp)
+    suspend fun scan(): ScanResult {
+        var results = ScanResult()
 
-                val cells = ArrayList<Double>()
-
-
-                for (i in 0..95) {
-                    val voltage =
-                        ObdCommands.getCellVoltage(readObd(ObdCommands.cells[i] + "1" + "\r\n"))
-                    cells.add(voltage)
-                    Log.i("BT", voltage.toString())
-                }
-                results.put("cell_voltages", cells)
-            }
-        } catch (e: java.lang.Exception) {
-            e.message?.let { Log.e("BT", it) }
-        } finally {
-            bluetoothSocket.close()
+        if (!bluetoothSocket.isConnected) {
+            bluetoothSocket.connect()
         }
+        if (bluetoothSocket.isConnected) {
+            readObd(ObdCommands.obdAtz)
+            readObd(ObdCommands.obdAte)
+            readObd(ObdCommands.obdAtsp)
 
+            val cells = ArrayList<Double>()
+
+
+            for (i in 0..95) {
+                val voltage =
+                    ObdCommands.getCellVoltage(readObd(ObdCommands.cells[i] + "1" + "\r\n"))
+                cells.add(voltage)
+                Log.i("BT", voltage.toString())
+            }
+            results.cells = cells
+        }
         return results
     }
 
@@ -125,6 +120,7 @@ class BluetoothManager constructor(private val address: String) {
 
         } catch (e: IOException) {
             e.message?.let { Log.e("BT RECV", it) }
+            throw Exception(e.message)
         }
 
         data = data.trim()

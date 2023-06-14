@@ -43,6 +43,7 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this@MainActivity, "Bluetooth error, please check permissions", Toast.LENGTH_SHORT)
         }
         layout = binding.navView
+        binding.loadingPanel.visibility = View.GONE
         val navView: BottomNavigationView = binding.navView
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
         // Passing each menu ID as a set of Ids because each

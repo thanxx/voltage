@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -17,7 +18,12 @@ import com.github.mikephil.charting.data.BarEntry
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import io.tripovan.voltage.R
 import io.tripovan.voltage.bluetooth.BluetoothManager
+import io.tripovan.voltage.data.ScanResult
 import io.tripovan.voltage.databinding.FragmentDashboardBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class DashboardFragment : Fragment() {
@@ -54,13 +60,32 @@ class DashboardFragment : Fragment() {
             }
         } else {
             button.text = "Scan"
+            val spinner = requireActivity().findViewById<View>(R.id.loadingPanel) as ProgressBar
+            spinner.visibility = View.VISIBLE
+            spinner.visibility = View.GONE
             button.setOnClickListener {
-                try {
-                    dashboardViewModel.updateCells(
-                        BluetoothManager(adapterAddress).scan().get("cell_voltages") as List<Double>
-                    )
-                } catch (e: Exception) {
-                    Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
+                spinner.visibility = View.VISIBLE
+                var bluetooth = BluetoothManager(adapterAddress)
+
+                GlobalScope.launch {
+
+                    var scan = ScanResult()
+                    // Perform work in the background
+                    try {
+                        scan = bluetooth.scan()
+                    } catch (e: Exception) {
+                        e.message?.let { it1 -> showToast(it1) }
+                    } finally {
+                        bluetooth.bluetoothSocket.close()
+                    }
+
+                    // Update UI or perform other operations with the result
+                    withContext(Dispatchers.Main) {
+                        if (scan.cells.isNotEmpty()) {
+                            dashboardViewModel.updateCells(scan.cells)
+                        }
+                        spinner.visibility = View.GONE
+                    }
                 }
             }
         }
@@ -95,6 +120,12 @@ class DashboardFragment : Fragment() {
             barChart.invalidate()
         }
         return root
+    }
+
+    suspend fun showToast(message: String) {
+        withContext(Dispatchers.Main) {
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onDestroyView() {

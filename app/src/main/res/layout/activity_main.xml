@@ -30,4 +30,17 @@
         app:layout_constraintTop_toTopOf="parent"
         app:navGraph="@navigation/mobile_navigation" />
 
+
+        <ProgressBar
+            android:id="@+id/loadingPanel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            app:layout_constraintTop_toTopOf="@id/container"
+            app:layout_constraintBottom_toBottomOf="@id/container"
+            app:layout_constraintStart_toStartOf="@id/container"
+            app:layout_constraintEnd_toEndOf="@id/container"
+            />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>
