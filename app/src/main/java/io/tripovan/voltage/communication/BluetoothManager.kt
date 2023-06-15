@@ -1,4 +1,4 @@
-package io.tripovan.voltage.bluetooth
+package io.tripovan.voltage.communication
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.util.Log
 import io.tripovan.voltage.data.ScanResult
-import org.json.JSONObject
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream

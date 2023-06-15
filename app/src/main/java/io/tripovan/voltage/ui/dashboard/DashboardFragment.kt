@@ -18,7 +18,7 @@ import com.github.mikephil.charting.data.BarEntry
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import io.tripovan.voltage.App
 import io.tripovan.voltage.R
-import io.tripovan.voltage.bluetooth.BluetoothManager
+import io.tripovan.voltage.communication.BluetoothManager
 import io.tripovan.voltage.data.ScanResult
 import io.tripovan.voltage.databinding.FragmentDashboardBinding
 import kotlinx.coroutines.Dispatchers

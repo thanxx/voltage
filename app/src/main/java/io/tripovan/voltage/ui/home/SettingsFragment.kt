@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import io.tripovan.voltage.bluetooth.BluetoothManager
+import io.tripovan.voltage.communication.BluetoothManager
 import io.tripovan.voltage.databinding.FragmentSettingsBinding
 import io.tripovan.voltage.ui.home.devices_list.DevicesAdapter
 

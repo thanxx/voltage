@@ -1,4 +1,4 @@
-package io.tripovan.voltage.bluetooth
+package io.tripovan.voltage.communication
 
 import java.math.BigInteger
 
