@@ -32,6 +32,7 @@ class DashboardFragment : Fragment() {
     private var _binding: FragmentDashboardBinding? = null
 
     private val binding get() = _binding!!
+    private lateinit var bluetooth: BluetoothManager
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -52,6 +53,12 @@ class DashboardFragment : Fragment() {
         val adapterAddress = sharedPref?.getString("adapter_address", null)
 
         val button = binding.scan
+        try {
+            bluetooth = adapterAddress?.let { BluetoothManager(it) }!!
+        } catch (e: Exception) {
+            Toast.makeText(App.instance.applicationContext, e.message, Toast.LENGTH_SHORT).show()
+        }
+
         if (adapterAddress == null) {
             button.text = "Select OBD2 adapter"
             button.setOnClickListener {
@@ -59,25 +66,29 @@ class DashboardFragment : Fragment() {
                     requireActivity().findViewById(R.id.nav_view)
                 navView.selectedItemId = R.id.navigation_settings
             }
-        } else {
+        }
+        if (!::bluetooth.isInitialized){
+            button.isEnabled = false
+            Toast.makeText(context, "Enable bluetooth and try again", Toast.LENGTH_SHORT)
+        }else {
             button.text = "Scan"
             val spinner = requireActivity().findViewById<View>(R.id.loadingPanel) as ProgressBar
             spinner.visibility = View.VISIBLE
             spinner.visibility = View.GONE
             button.setOnClickListener {
                 spinner.visibility = View.VISIBLE
-                var bluetooth = BluetoothManager(adapterAddress)
+
 
                 GlobalScope.launch {
 
                     var scan = ScanResult()
                     // Perform work in the background
                     try {
-                        scan = bluetooth.scan()
+                        scan = bluetooth?.scan()!!
                     } catch (e: Exception) {
-                        e.message?.let { it1 -> showToast(it1) }
+                        e.message?.let { it1 -> App.instance.showToast(it1) }
                     } finally {
-                        bluetooth.bluetoothSocket.close()
+                        bluetooth?.bluetoothSocket?.close()
                     }
 
                     // Update UI or perform other operations with the result
@@ -123,11 +134,7 @@ class DashboardFragment : Fragment() {
         return root
     }
 
-    suspend fun showToast(message: String) {
-        withContext(Dispatchers.Main) {
-            Toast.makeText(App.instance.applicationContext, message, Toast.LENGTH_SHORT).show()
-        }
-    }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

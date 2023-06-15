@@ -18,7 +18,7 @@ class BluetoothManager constructor(private val address: String) {
     private var outputStream: OutputStream
 
 
-    private val bluetoothAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+    val bluetoothAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
     private lateinit var device: BluetoothDevice
     var bluetoothSocket: BluetoothSocket
 
@@ -48,7 +48,7 @@ class BluetoothManager constructor(private val address: String) {
                 device.address == address
             }!!
         } else {
-            throw Exception("Bluetooth error, check settings")
+            throw Exception("Bluetooth error, enable it, check app settings...")
         }
 
 
