@@ -36,12 +36,11 @@ class DevicesAdapter(private var dataList: List<BluetoothDevice>, var fragment: 
             editor.putString("adapter_address", adapterAddress)
             editor.apply()
             settingsViewModel.updateText(adapterAddress)
-            Toast.makeText(context, dataList[position].name, Toast.LENGTH_SHORT).show()
+            var name = dataList[position].name
+            Toast.makeText(context, "$name is selected", Toast.LENGTH_SHORT).show()
 
-            // Redirect to settings if we have no host
             val navView: BottomNavigationView =
                 fragment.requireActivity().findViewById(R.id.nav_view)
-            //navView.menu.findItem(R.id.navigation_dashboard).setChecked(true)
             navView.selectedItemId = R.id.navigation_dashboard
         }
     }

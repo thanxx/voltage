@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import io.tripovan.voltage.App
+import io.tripovan.voltage.communication.BluetoothManager
 import io.tripovan.voltage.databinding.FragmentSettingsBinding
 import io.tripovan.voltage.ui.home.devices_list.DevicesAdapter
 
@@ -22,12 +23,9 @@ class SettingsFragment : Fragment() {
     private val binding get() = _binding!!
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
-        val settingsViewModel =
-            ViewModelProvider(this).get(SettingsViewModel::class.java)
+        val settingsViewModel = ViewModelProvider(this).get(SettingsViewModel::class.java)
 
         // init settings
         val sharedPref = context?.getSharedPreferences("voltage_settings", Context.MODE_PRIVATE)
@@ -41,19 +39,15 @@ class SettingsFragment : Fragment() {
         button.visibility = View.GONE
 
 
-        var bluetoothManager = App.instance.getBluetoothManager()
+        //var bluetoothManager = App.instance.getBluetoothManager()
+        var btDevices = BluetoothManager.getPairedDevices()
+        settingsViewModel.updateDevicesList(btDevices)
+        btDevices.isEmpty().let { settingsViewModel.updateText("Make sure you have paired your OBD2 adapter and/or turned on Bluetooth") }
 
-
-        if (bluetoothManager != null) {
-            settingsViewModel.updateDevicesList(bluetoothManager.getPairedDevices())
-            if (adapterAddress != null) {
-                settingsViewModel.updateText("Selected adapter: $adapterAddress")
-            }
-
-        } else {
-            settingsViewModel.updateDevicesList(emptyList())
-            settingsViewModel.updateText("Turn on Bluetooth to select adapter")
+        if (adapterAddress != null) {
+            settingsViewModel.updateText("Selected adapter: $adapterAddress")
         }
+
 
 
         devicesView = binding.devices

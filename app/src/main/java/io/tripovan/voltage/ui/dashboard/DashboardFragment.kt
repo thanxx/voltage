@@ -26,7 +26,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-
 class DashboardFragment : Fragment() {
 
     private var _binding: FragmentDashboardBinding? = null
@@ -72,14 +71,12 @@ class DashboardFragment : Fragment() {
         }
         if (bluetooth == null) {
             button.isEnabled = false
-            Toast.makeText(context, "Enable bluetooth and try again", Toast.LENGTH_SHORT).show()
         } else {
             button.text = "Scan"
             val spinner = requireActivity().findViewById<View>(R.id.loadingPanel) as ProgressBar
             spinner.visibility = View.GONE
             button.setOnClickListener {
                 spinner.visibility = View.VISIBLE
-
 
                 GlobalScope.launch {
 

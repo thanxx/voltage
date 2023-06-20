@@ -3,6 +3,7 @@ package io.tripovan.voltage.communication
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothSocket
 import android.util.Log
 import io.tripovan.voltage.data.ScanResult
@@ -17,9 +18,25 @@ class BluetoothManager constructor(private val address: String) {
     private var outputStream: OutputStream
 
 
-    private val bluetoothAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
     private var device: BluetoothDevice? = null
     var bluetoothSocket: BluetoothSocket
+    //var instance: io.tripovan.voltage.communication.BluetoothManager = this
+
+    companion object {
+
+        private val bluetoothAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+        @SuppressLint("MissingPermission")
+        fun getPairedDevices(): List<BluetoothDevice> {
+            val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter.bondedDevices
+            val deviceList = mutableListOf<BluetoothDevice>()
+            pairedDevices?.let {
+                for (device: BluetoothDevice in it) {
+                    deviceList.add(device)
+                }
+            }
+            return deviceList
+        }
+    }
 
     init {
         getSocket().let {
@@ -34,17 +51,7 @@ class BluetoothManager constructor(private val address: String) {
         Log.i("BT", "Socket initialized")
     }
 
-    @SuppressLint("MissingPermission")
-    fun getPairedDevices(): List<BluetoothDevice> {
-        val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter.bondedDevices
-        val deviceList = mutableListOf<BluetoothDevice>()
-        pairedDevices?.let {
-            for (device: BluetoothDevice in it) {
-                deviceList.add(device)
-            }
-        }
-        return deviceList
-    }
+
 
     @SuppressLint("MissingPermission")
     private fun getSocket(): BluetoothSocket? {
@@ -61,10 +68,6 @@ class BluetoothManager constructor(private val address: String) {
         } else {
             throw Exception("Bluetooth error, enable it, check app settings...")
         }
-
-
-        // Create a Bluetooth socket using the SPP UUID
-
     }
 
     @SuppressLint("MissingPermission")

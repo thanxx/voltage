@@ -21,6 +21,7 @@
         android:layout_marginBottom="10dp"
         android:layout_marginEnd="15dp"
         android:textSize="18sp"
+        android:text="Select OBD2 adapter"
 
         app:layout_constraintBottom_toTopOf="@id/selected_device"
         app:layout_constraintTop_toTopOf="parent"/>
