@@ -89,8 +89,6 @@ class DashboardFragment : Fragment() {
                         scan = bluetooth?.scan()!!
                     } catch (e: Exception) {
                         e.message?.let { it1 -> App.instance.showToast(it1) }
-                    } finally {
-                        bluetooth?.bluetoothSocket?.close()
                     }
 
                     // Update UI or perform other operations with the result

@@ -27,7 +27,11 @@ class App : Application() {
         if (adapterAddress != null) {
             instance.initBluetooth(adapterAddress)
         }
+    }
 
+    override fun onTerminate() {
+        super.onTerminate()
+        instance.getBluetoothManager()?.bluetoothSocket?.close()
     }
 
     fun initBluetooth(address: String){
@@ -43,4 +47,6 @@ class App : Application() {
             Toast.makeText(instance.applicationContext, message, Toast.LENGTH_LONG).show()
         }
     }
+
+
 }
