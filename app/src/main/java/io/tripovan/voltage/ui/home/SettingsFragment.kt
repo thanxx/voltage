@@ -42,7 +42,11 @@ class SettingsFragment : Fragment() {
         //var bluetoothManager = App.instance.getBluetoothManager()
         var btDevices = BluetoothManager.getPairedDevices()
         settingsViewModel.updateDevicesList(btDevices)
-        btDevices.isEmpty().let { settingsViewModel.updateText("Make sure you have paired your OBD2 adapter and/or turned on Bluetooth") }
+        if (btDevices.isEmpty()) {
+            settingsViewModel.updateText("Make sure you have paired your OBD2 adapter and/or turned on Bluetooth")
+        } else {
+            settingsViewModel.updateText("Select OBD2 adapter")
+        }
 
         if (adapterAddress != null) {
             settingsViewModel.updateText("Selected adapter: $adapterAddress")

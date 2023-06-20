@@ -29,10 +29,8 @@ import kotlinx.coroutines.withContext
 class DashboardFragment : Fragment() {
 
     private var _binding: FragmentDashboardBinding? = null
-
     private val binding get() = _binding!!
     private var bluetooth: BluetoothManager? = null
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
