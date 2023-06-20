@@ -32,7 +32,7 @@ class DashboardFragment : Fragment() {
     private var _binding: FragmentDashboardBinding? = null
 
     private val binding get() = _binding!!
-    private lateinit var bluetooth: BluetoothManager
+    private var bluetooth: BluetoothManager? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -54,7 +54,10 @@ class DashboardFragment : Fragment() {
 
         val button = binding.scan
         try {
-            bluetooth = adapterAddress?.let { BluetoothManager(it) }!!
+            var bluetoothManager = App.instance.getBluetoothManager()
+            if (bluetoothManager != null) {
+                bluetooth = App.instance.getBluetoothManager()
+            }
         } catch (e: Exception) {
             Toast.makeText(App.instance.applicationContext, e.message, Toast.LENGTH_SHORT).show()
         }
@@ -67,13 +70,12 @@ class DashboardFragment : Fragment() {
                 navView.selectedItemId = R.id.navigation_settings
             }
         }
-        if (!::bluetooth.isInitialized){
+        if (bluetooth == null) {
             button.isEnabled = false
-            Toast.makeText(context, "Enable bluetooth and try again", Toast.LENGTH_SHORT)
-        }else {
+            Toast.makeText(context, "Enable bluetooth and try again", Toast.LENGTH_SHORT).show()
+        } else {
             button.text = "Scan"
             val spinner = requireActivity().findViewById<View>(R.id.loadingPanel) as ProgressBar
-            spinner.visibility = View.VISIBLE
             spinner.visibility = View.GONE
             button.setOnClickListener {
                 spinner.visibility = View.VISIBLE
@@ -133,7 +135,6 @@ class DashboardFragment : Fragment() {
         }
         return root
     }
-
 
 
     override fun onDestroyView() {

@@ -17,14 +17,21 @@ class BluetoothManager constructor(private val address: String) {
     private var outputStream: OutputStream
 
 
-    val bluetoothAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-    private lateinit var device: BluetoothDevice
+    private val bluetoothAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+    private var device: BluetoothDevice? = null
     var bluetoothSocket: BluetoothSocket
 
     init {
-        bluetoothSocket = getSocket()
-        outputStream = bluetoothSocket.outputStream
-        inputStream = bluetoothSocket.inputStream
+        getSocket().let {
+            if (it != null) {
+                bluetoothSocket = it
+                outputStream = bluetoothSocket.outputStream
+                inputStream = bluetoothSocket.inputStream
+            } else {
+                throw Exception("Can't initialize bluetooth socket")
+            }
+        }
+        Log.i("BT", "Socket initialized")
     }
 
     @SuppressLint("MissingPermission")
@@ -40,20 +47,24 @@ class BluetoothManager constructor(private val address: String) {
     }
 
     @SuppressLint("MissingPermission")
-    private fun getSocket(): BluetoothSocket {
+    private fun getSocket(): BluetoothSocket? {
         val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter.bondedDevices
         if (!pairedDevices.isNullOrEmpty()) {
             device = pairedDevices.find { device ->
                 device.address == address
-            }!!
+            }
+            device.let {
+                return device?.createRfcommSocketToServiceRecord(
+                    device?.uuids?.get(0)?.uuid
+                )
+            }
         } else {
             throw Exception("Bluetooth error, enable it, check app settings...")
         }
 
 
         // Create a Bluetooth socket using the SPP UUID
-        val uuids = device.uuids
-        return device.createRfcommSocketToServiceRecord(uuids[0].uuid)
+
     }
 
     @SuppressLint("MissingPermission")

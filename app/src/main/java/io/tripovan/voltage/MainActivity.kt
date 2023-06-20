@@ -1,6 +1,7 @@
 package io.tripovan.voltage
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -21,7 +22,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var layout: View
-
+    private lateinit var sharedPreferencesChangeListener: SharedPreferencesChangeListener
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,6 +43,17 @@ class MainActivity : AppCompatActivity() {
         } else {
             Toast.makeText(this@MainActivity, "Bluetooth error, please check permissions", Toast.LENGTH_SHORT).show()
         }
+
+        val sharedPref = getSharedPreferences("voltage_settings", Context.MODE_PRIVATE)
+        sharedPreferencesChangeListener = SharedPreferencesChangeListener(this, sharedPref) {
+            val adapterAddress = sharedPref?.getString("adapter_address", null)
+            if (adapterAddress != null) {
+                App.instance.initBluetooth(adapterAddress)
+            }
+            // Code to execute when preferences change
+            // For example, update your UI or perform other operations
+        }
+
         layout = binding.navView
         binding.loadingPanel.visibility = View.GONE
         val navView: BottomNavigationView = binding.navView
@@ -55,5 +67,10 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        sharedPreferencesChangeListener.unregister()
     }
 }

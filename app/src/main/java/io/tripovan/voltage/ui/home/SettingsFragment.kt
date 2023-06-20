@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import io.tripovan.voltage.communication.BluetoothManager
+import io.tripovan.voltage.App
 import io.tripovan.voltage.databinding.FragmentSettingsBinding
 import io.tripovan.voltage.ui.home.devices_list.DevicesAdapter
 
@@ -26,8 +26,8 @@ class SettingsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val homeViewModel =
-            ViewModelProvider(this).get(HomeViewModel::class.java)
+        val settingsViewModel =
+            ViewModelProvider(this).get(SettingsViewModel::class.java)
 
         // init settings
         val sharedPref = context?.getSharedPreferences("voltage_settings", Context.MODE_PRIVATE)
@@ -39,32 +39,35 @@ class SettingsFragment : Fragment() {
         val root: View = binding.root
         val button = binding.connect
         button.visibility = View.GONE
-        try {
-            val bluetoothManager = adapterAddress?.let { BluetoothManager(it) }
-            if (bluetoothManager != null) {
-                homeViewModel.updateDevicesList(bluetoothManager.getPairedDevices())
+
+
+        var bluetoothManager = App.instance.getBluetoothManager()
+
+
+        if (bluetoothManager != null) {
+            settingsViewModel.updateDevicesList(bluetoothManager.getPairedDevices())
+            if (adapterAddress != null) {
+                settingsViewModel.updateText("Selected adapter: $adapterAddress")
             }
-        } catch (e: Exception) {
-            e.message?.let { Log.e("HOME", it) }
+
+        } else {
+            settingsViewModel.updateDevicesList(emptyList())
+            settingsViewModel.updateText("Turn on Bluetooth to select adapter")
         }
 
-
-        if (adapterAddress != null) {
-            homeViewModel.updateSelectedDevice(adapterAddress)
-        }
 
         devicesView = binding.devices
         adapter = DevicesAdapter(emptyList(), this)
         devicesView.adapter = adapter
         devicesView.layoutManager = LinearLayoutManager(requireContext())
 
-        homeViewModel.devicesList.observe(viewLifecycleOwner) { itemList ->
+        settingsViewModel.devicesList.observe(viewLifecycleOwner) { itemList ->
             adapter.updateList(itemList)
         }
 
-        val selectedDevice: TextView = binding.selectedDevice
-        homeViewModel.selectedDevice.observe(viewLifecycleOwner) { device ->
-            selectedDevice.text = device
+        val textView: TextView = binding.selectedDevice
+        settingsViewModel.text.observe(viewLifecycleOwner) { text ->
+            textView.text = text
         }
 
         return root

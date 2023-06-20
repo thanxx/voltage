@@ -10,16 +10,14 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.internal.ContextUtils.getActivity
 import io.tripovan.voltage.R
-import io.tripovan.voltage.ui.home.HomeViewModel
+import io.tripovan.voltage.ui.home.SettingsViewModel
 
-class DevicesAdapter(private var dataList: List<BluetoothDevice>,fragment: Fragment) : RecyclerView.Adapter<DevicesViewHolder>() {
+class DevicesAdapter(private var dataList: List<BluetoothDevice>, var fragment: Fragment) : RecyclerView.Adapter<DevicesViewHolder>() {
 
     lateinit var context: Context
-    var fragment = fragment
-    val homeViewModel =
-        ViewModelProvider(fragment).get(HomeViewModel::class.java)
+    private val settingsViewModel =
+        ViewModelProvider(fragment).get(SettingsViewModel::class.java)
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DevicesViewHolder {
         context = parent.context
         val view = LayoutInflater.from(parent.context).inflate(R.layout.device, parent, false)
@@ -37,12 +35,12 @@ class DevicesAdapter(private var dataList: List<BluetoothDevice>,fragment: Fragm
             val editor = sharedPref.edit()
             editor.putString("adapter_address", adapterAddress)
             editor.apply()
-            homeViewModel.updateSelectedDevice(adapterAddress)
+            settingsViewModel.updateText(adapterAddress)
             Toast.makeText(context, dataList[position].name, Toast.LENGTH_SHORT).show()
 
             // Redirect to settings if we have no host
             val navView: BottomNavigationView =
-                fragment.requireActivity().findViewById(R.id.nav_view);
+                fragment.requireActivity().findViewById(R.id.nav_view)
             //navView.menu.findItem(R.id.navigation_dashboard).setChecked(true)
             navView.selectedItemId = R.id.navigation_dashboard
         }
