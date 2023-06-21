@@ -5,7 +5,7 @@ import android.util.Log
 import io.tripovan.voltage.App
 import java.math.BigInteger
 
-class Volt2Obd2Impl : VehicleScanResultsProvider {
+class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
 
     private val cellPids = arrayOf(
         "224181",
@@ -106,57 +106,75 @@ class Volt2Obd2Impl : VehicleScanResultsProvider {
         "224240"
     )
 
-    fun getCellsVoltages(): ArrayList<Double> {
+    private fun getCellsVoltages(): ArrayList<Double> {
+
         val cells = ArrayList<Double>()
         for (i in 0..95) {
 
             val cellResponse = App.socketManager!!.readObd(cellPids[i] + "1" + "\r\n")
-            val arr = cellResponse.split(" ")
-            val a = BigInteger(arr[arr.size - 2], 16).toDouble()
-            val b = BigInteger(arr[arr.size - 1], 16).toDouble()
-            val voltage = (((a * 256) + b) * 5) / 65535
+            val decoded = decodeResponse(cellResponse)
+            val voltage = (((decoded[decoded.size - 2] * 256) + decoded[decoded.size - 1]) * 5) / 65535
             cells.add(voltage)
             Log.i("BT", voltage.toString())
         }
         return cells
     }
 
-    fun getSocRawHd(): Double {
-        TODO("Not yet implemented")
-    }
+    private fun getSocRawHd(): Double {
+        val response = App.socketManager!!.readObd( "2243AF1" + "\r\n")
+        val decoded = decodeResponse(response)
+        return ((decoded[decoded.size - 2] * 256) + decoded[decoded.size - 1]) * 100 / 65535
 
-    fun getSocRawDisplayed(): Double {
-        TODO("Not yet implemented")
-    }
-
-    fun getCapacity(): Double {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun scan(): ScanResult{
-        var scan = ScanResult()
-
-        scan.cells = getCellsVoltages()
-
-        return scan
-    }
-
-
-//
-//    def get_soc_raw_hd(sock):
+        //    def get_soc_raw_hd(sock):
 //    resp = get_obd("2243AF", sock).split()
 //    soc = ((int(resp[-2],16) * 256) + int(resp[-1], 16)) * 100 / 65535
 //    return soc
-//
-//
-//    def get_battery_capacity(sock):
-//    resp = get_obd("2241A3", sock).split()
-//    cap = int((resp[-2]+resp[-1]), 16) / 30
-//    return cap
-//
-//
+
+    }
+
+    private fun getSocRawDisplayed(): Double {
+        val response = App.socketManager!!.readObd( "228334" + "\r\n")
+        val decoded = decodeResponse(response)
+        return decoded[decoded.size - 1] * 100 / 255
 //    def get_soc_displayed(sock):
 //    resp = get_obd("228334", sock).split()
 //    level = int(resp[-1], 16) * 100 / 255
 //    return level
+
+    }
+
+    private fun getCapacity(): Double {
+        val response = App.socketManager!!.readObd( "2241A31" + "\r\n")
+        val arr = response.split(" ")
+
+        return (BigInteger(arr[arr.size - 2] + arr[arr.size - 1], 16).toDouble()) / 30
+        //    def get_battery_capacity(sock):
+//    resp = get_obd("2241A3", sock).split()
+//    cap = int((resp[-2]+resp[-1]), 16) / 30
+//    return cap
+
+    }
+
+    override suspend fun scan(): ScanResult{
+        initObd()
+        var scan = ScanResult()
+        App.socketManager?.readObd("ATSH7E7 \r\n")
+        scan.cells = getCellsVoltages()
+        App.socketManager?.readObd("ATSH7E4 \r\n")
+        scan.capacity = getCapacity()
+        scan.socRawHd = getSocRawHd()
+        scan.socDisplayed = getSocRawDisplayed()
+        return scan
+    }
+
+
+
+//
+
+//
+//
+
+//
+//
+
 }

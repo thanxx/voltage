@@ -89,8 +89,12 @@ class DashboardFragment : Fragment() {
 
                     // Update UI or perform other operations with the result
                     withContext(Dispatchers.Main) {
+                        val capacity = scan.capacity
+                        val socRawHd = scan.socRawHd
+                        val socDisplayed = scan.socDisplayed
                         if (scan.cells.isNotEmpty()) {
                             dashboardViewModel.updateCells(scan.cells)
+                            dashboardViewModel.updateSummary("Capacity: $capacity \nSoC Raw HD: $socRawHd \nSoC Displayed: $socDisplayed")
                         }
                         spinner.visibility = View.GONE
                     }

@@ -18,7 +18,7 @@ class DashboardViewModel : ViewModel() {
         _cells.value = data
     }
 
-    fun updateSummary(device: String) {
-        _summary.value = "Summary: $device"
+    fun updateSummary(summary: String) {
+        _summary.value = "$summary"
     }
 }
