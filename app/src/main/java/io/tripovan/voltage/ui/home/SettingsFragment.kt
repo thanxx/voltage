@@ -2,7 +2,6 @@ package io.tripovan.voltage.ui.home
 
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,8 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import io.tripovan.voltage.App
-import io.tripovan.voltage.communication.BluetoothManager
+import io.tripovan.voltage.communication.SocketManager
 import io.tripovan.voltage.databinding.FragmentSettingsBinding
 import io.tripovan.voltage.ui.home.devices_list.DevicesAdapter
 
@@ -30,17 +28,13 @@ class SettingsFragment : Fragment() {
         // init settings
         val sharedPref = context?.getSharedPreferences("voltage_settings", Context.MODE_PRIVATE)
         val adapterAddress = sharedPref?.getString("adapter_address", null)
-        Log.i("MAIN", String.format("adapter: %s", adapterAddress))
-
 
         _binding = FragmentSettingsBinding.inflate(inflater, container, false)
         val root: View = binding.root
         val button = binding.connect
         button.visibility = View.GONE
 
-
-        //var bluetoothManager = App.instance.getBluetoothManager()
-        var btDevices = BluetoothManager.getPairedDevices()
+        var btDevices = SocketManager.getPairedDevices()
         settingsViewModel.updateDevicesList(btDevices)
         if (btDevices.isEmpty()) {
             settingsViewModel.updateText("Make sure you have paired your OBD2 adapter and/or turned on Bluetooth")
@@ -51,7 +45,6 @@ class SettingsFragment : Fragment() {
         if (adapterAddress != null) {
             settingsViewModel.updateText("Selected adapter: $adapterAddress")
         }
-
 
 
         devicesView = binding.devices

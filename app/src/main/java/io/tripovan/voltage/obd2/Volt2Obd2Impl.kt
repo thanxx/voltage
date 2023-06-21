@@ -1,13 +1,13 @@
-package io.tripovan.voltage.communication
+package io.tripovan.voltage.obd2
 
+import io.tripovan.voltage.data.ScanResult
+import android.util.Log
+import io.tripovan.voltage.App
 import java.math.BigInteger
 
-object ObdCommands {
-    val obdAtz = "ATZ \r\n"
-    val obdAte = "ATE0 \r\n"
-    val obdAtsp = "ATSP0 \r\n"
+class Volt2Obd2Impl : VehicleScanResultsProvider {
 
-    val cells = arrayOf(
+    private val cellPids = arrayOf(
         "224181",
         "224182",
         "224183",
@@ -106,10 +106,57 @@ object ObdCommands {
         "224240"
     )
 
-    fun getCellVoltage(value: String):Double{
-        val arr = value.split(" ")
-        val a = BigInteger(arr[arr.size - 2], 16).toDouble()
-        val b = BigInteger(arr[arr.size - 1], 16).toDouble()
-        return (((a * 256) + b) * 5) / 65535
+    fun getCellsVoltages(): ArrayList<Double> {
+        val cells = ArrayList<Double>()
+        for (i in 0..95) {
+
+            val cellResponse = App.socketManager!!.readObd(cellPids[i] + "1" + "\r\n")
+            val arr = cellResponse.split(" ")
+            val a = BigInteger(arr[arr.size - 2], 16).toDouble()
+            val b = BigInteger(arr[arr.size - 1], 16).toDouble()
+            val voltage = (((a * 256) + b) * 5) / 65535
+            cells.add(voltage)
+            Log.i("BT", voltage.toString())
+        }
+        return cells
     }
+
+    fun getSocRawHd(): Double {
+        TODO("Not yet implemented")
+    }
+
+    fun getSocRawDisplayed(): Double {
+        TODO("Not yet implemented")
+    }
+
+    fun getCapacity(): Double {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun scan(): ScanResult{
+        var scan = ScanResult()
+
+        scan.cells = getCellsVoltages()
+
+        return scan
+    }
+
+
+//
+//    def get_soc_raw_hd(sock):
+//    resp = get_obd("2243AF", sock).split()
+//    soc = ((int(resp[-2],16) * 256) + int(resp[-1], 16)) * 100 / 65535
+//    return soc
+//
+//
+//    def get_battery_capacity(sock):
+//    resp = get_obd("2241A3", sock).split()
+//    cap = int((resp[-2]+resp[-1]), 16) / 30
+//    return cap
+//
+//
+//    def get_soc_displayed(sock):
+//    resp = get_obd("228334", sock).split()
+//    level = int(resp[-1], 16) * 100 / 255
+//    return level
 }

@@ -3,7 +3,7 @@ package io.tripovan.voltage
 import android.app.Application
 import android.content.Context
 import android.widget.Toast
-import io.tripovan.voltage.communication.BluetoothManager
+import io.tripovan.voltage.communication.SocketManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -11,7 +11,7 @@ class App : Application() {
     companion object {
         lateinit var instance: App
             private set
-        var bluetoothManager: BluetoothManager? = null
+        var socketManager: SocketManager? = null
 
     }
 
@@ -35,11 +35,11 @@ class App : Application() {
     }
 
     fun initBluetooth(address: String){
-        bluetoothManager = BluetoothManager(address)
+        socketManager = SocketManager(address)
     }
 
-    fun getBluetoothManager(): BluetoothManager? {
-        return bluetoothManager
+    fun getBluetoothManager(): SocketManager? {
+        return socketManager
     }
 
     suspend fun showToast(message: String) {

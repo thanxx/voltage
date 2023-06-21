@@ -18,9 +18,10 @@ import com.github.mikephil.charting.data.BarEntry
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import io.tripovan.voltage.App
 import io.tripovan.voltage.R
-import io.tripovan.voltage.communication.BluetoothManager
+import io.tripovan.voltage.communication.SocketManager
 import io.tripovan.voltage.data.ScanResult
 import io.tripovan.voltage.databinding.FragmentDashboardBinding
+import io.tripovan.voltage.obd2.Volt2Obd2Impl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -30,7 +31,7 @@ class DashboardFragment : Fragment() {
 
     private var _binding: FragmentDashboardBinding? = null
     private val binding get() = _binding!!
-    private var bluetooth: BluetoothManager? = null
+    private var socketManager: SocketManager? = null
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -53,7 +54,7 @@ class DashboardFragment : Fragment() {
         try {
             var bluetoothManager = App.instance.getBluetoothManager()
             if (bluetoothManager != null) {
-                bluetooth = App.instance.getBluetoothManager()
+                socketManager = App.instance.getBluetoothManager()
             }
         } catch (e: Exception) {
             Toast.makeText(App.instance.applicationContext, e.message, Toast.LENGTH_SHORT).show()
@@ -67,7 +68,7 @@ class DashboardFragment : Fragment() {
                 navView.selectedItemId = R.id.navigation_settings
             }
         }
-        if (bluetooth == null) {
+        if (socketManager == null) {
             button.isEnabled = false
         } else {
             button.text = "Scan"
@@ -81,7 +82,7 @@ class DashboardFragment : Fragment() {
                     var scan = ScanResult()
                     // Perform work in the background
                     try {
-                        scan = bluetooth?.scan()!!
+                        scan = Volt2Obd2Impl().scan()
                     } catch (e: Exception) {
                         e.message?.let { it1 -> App.instance.showToast(it1) }
                     }

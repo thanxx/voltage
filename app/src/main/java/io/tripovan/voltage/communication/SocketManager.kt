@@ -3,16 +3,16 @@ package io.tripovan.voltage.communication
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothSocket
 import android.util.Log
 import io.tripovan.voltage.data.ScanResult
+import io.tripovan.voltage.obd2.Volt2Obd2Impl
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 
 
-class BluetoothManager constructor(private val address: String) {
+class SocketManager constructor(private val address: String) {
 
     private var inputStream: InputStream
     private var outputStream: OutputStream
@@ -70,34 +70,13 @@ class BluetoothManager constructor(private val address: String) {
         }
     }
 
-    @SuppressLint("MissingPermission")
-    suspend fun scan(): ScanResult {
-        var results = ScanResult()
 
+    @SuppressLint("MissingPermission")
+    fun readObd(cmd: String): String {
         if (!bluetoothSocket.isConnected) {
             bluetoothSocket.connect()
         }
-        if (bluetoothSocket.isConnected) {
-            readObd(ObdCommands.obdAtz)
-            readObd(ObdCommands.obdAte)
-            readObd(ObdCommands.obdAtsp)
 
-            val cells = ArrayList<Double>()
-
-
-            for (i in 0..95) {
-                val voltage =
-                    ObdCommands.getCellVoltage(readObd(ObdCommands.cells[i] + "1" + "\r\n"))
-                cells.add(voltage)
-                Log.i("BT", voltage.toString())
-            }
-            results.cells = cells
-        }
-        return results
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun readObd(cmd: String): String {
         var data = ""
 
         // Send
@@ -107,7 +86,6 @@ class BluetoothManager constructor(private val address: String) {
         } catch (e: Exception) {
             e.message?.let {
                 Log.e("BT SEND", it)
-                //bluetoothSocket.close()
                 throw RuntimeException("Error sending data")
             }
         }
