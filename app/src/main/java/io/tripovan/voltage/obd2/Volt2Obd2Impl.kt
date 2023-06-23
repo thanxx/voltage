@@ -125,10 +125,6 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
         val decoded = decodeResponse(response)
         return ((decoded[decoded.size - 2] * 256) + decoded[decoded.size - 1]) * 100 / 65535
 
-        //    def get_soc_raw_hd(sock):
-//    resp = get_obd("2243AF", sock).split()
-//    soc = ((int(resp[-2],16) * 256) + int(resp[-1], 16)) * 100 / 65535
-//    return soc
 
     }
 
@@ -136,10 +132,6 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
         val response = App.socketManager!!.readObd( "228334" + "\r\n")
         val decoded = decodeResponse(response)
         return decoded[decoded.size - 1] * 100 / 255
-//    def get_soc_displayed(sock):
-//    resp = get_obd("228334", sock).split()
-//    level = int(resp[-1], 16) * 100 / 255
-//    return level
 
     }
 
@@ -148,10 +140,6 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
         val arr = response.split(" ")
 
         return (BigInteger(arr[arr.size - 2] + arr[arr.size - 1], 16).toDouble()) / 30
-        //    def get_battery_capacity(sock):
-//    resp = get_obd("2241A3", sock).split()
-//    cap = int((resp[-2]+resp[-1]), 16) / 30
-//    return cap
 
     }
 
@@ -167,14 +155,5 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
         return scan
     }
 
-
-
-//
-
-//
-//
-
-//
-//
 
 }
