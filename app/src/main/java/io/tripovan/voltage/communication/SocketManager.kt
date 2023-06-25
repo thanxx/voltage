@@ -20,7 +20,6 @@ class SocketManager constructor(private val address: String) {
 
     private var device: BluetoothDevice? = null
     var bluetoothSocket: BluetoothSocket
-    //var instance: io.tripovan.voltage.communication.BluetoothManager = this
 
     companion object {
 
