@@ -62,7 +62,7 @@ class DashboardFragment : Fragment(),
             cellsSummary.text = it
         }
         dashboardViewModel.spread.observe(viewLifecycleOwner) {
-            spreadTextView.text = String.format("Spread: %.3f V", it)
+            spreadTextView.text = String.format("Spread: %.1f mV", it * 1000)
             spreadTextView.setTextColor(Color.GREEN)
             if (it > 0.120) {
                 spreadTextView.setTextColor(Color.RED)
@@ -70,7 +70,6 @@ class DashboardFragment : Fragment(),
             if (it > 0.90) {
                 spreadTextView.setTextColor(Color.YELLOW)
             }
-
         }
         dashboardViewModel.selectedCell.observe(viewLifecycleOwner) {
             selectedCell.text = it
@@ -109,7 +108,6 @@ class DashboardFragment : Fragment(),
                 GlobalScope.launch {
 
                     var scan: ScanResultEntry? = null
-                    // Perform work in the background
                     try {
                         // todo select vehicle implementation depending on app settings
                         scan = Volt2Obd2Impl().scan()
@@ -120,17 +118,15 @@ class DashboardFragment : Fragment(),
                         e.message?.let { it1 -> App.instance.showToast(it1) }
                     }
 
-                    // Update UI or perform other operations with the result
                     withContext(Dispatchers.Main) {
                         updateUI(scan)
+                        spinner.visibility = View.GONE
                     }
                 }
-                spinner.visibility = View.GONE
             }
         }
 
 
-        // Create the BarChart
         val barChart: BarChart = binding.barChart
         dashboardViewModel.cells.observe(viewLifecycleOwner) {
             val entries = mutableListOf<BarEntry>()
@@ -140,14 +136,11 @@ class DashboardFragment : Fragment(),
             val dataSet = BarDataSet(entries, "BarDataSet")
             dataSet.color = Color.BLUE
 
-            // Create a BarData object with the dataSet
             val data = BarData(dataSet)
             data.barWidth = 0.9f
 
-            // Set the data to the BarChart
             barChart.data = data
 
-            // Customize the appearance of the BarChart
             barChart.setFitBars(false)
             barChart.setDrawValueAboveBar(false)
 
@@ -161,24 +154,26 @@ class DashboardFragment : Fragment(),
             barChart.setMaxVisibleValueCount(1)
             barChart.setOnChartValueSelectedListener(this)
 
-            // Refresh the BarChart
             barChart.invalidate()
         }
 
         GlobalScope.launch {
 
             var scan: ScanResultEntry? = null
-            // Perform work in the background
             try {
-                scan = App.database.scanResultDao().getAllScanResults().last()
+                val results = App.database.scanResultDao().getAllScanResults()
+                if (results.isNotEmpty()) {
+                    scan = App.database.scanResultDao().getAllScanResults().last()
+                }
 
             } catch (e: Exception) {
                 e.message?.let { it1 -> App.instance.showToast(it1) }
             }
 
-            // Update UI or perform other operations with the result
-            withContext(Dispatchers.Main) {
-                updateUI(scan)
+            if (scan != null) {
+                withContext(Dispatchers.Main) {
+                    updateUI(scan)
+                }
             }
         }
 
@@ -219,7 +214,13 @@ class DashboardFragment : Fragment(),
     override fun onValueSelected(e: Entry?, h: Highlight?) {
         if (e != null) {
             val entry = e as BarEntry
-            dashboardViewModel.updateSelectedCell(String.format("Selected cell: #%d, %.3f V", entry.x.toInt() + 1, entry.y))
+            dashboardViewModel.updateSelectedCell(
+                String.format(
+                    "Selected cell: #%d, %.3f V",
+                    entry.x.toInt() + 1,
+                    entry.y
+                )
+            )
         }
     }
 
