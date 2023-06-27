@@ -1,6 +1,6 @@
-package io.tripovan.voltage.obd2
+package io.tripovan.voltage.communication.obd2
 
-import io.tripovan.voltage.data.ScanResult
+import io.tripovan.voltage.data.ScanResultEntry
 import android.util.Log
 import io.tripovan.voltage.App
 import java.math.BigInteger
@@ -143,17 +143,35 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
 
     }
 
-    override suspend fun scan(): ScanResult{
+    override suspend fun scan(): ScanResultEntry{
         initObd()
-        var scan = ScanResult()
+
         App.socketManager?.readObd("ATSH7E7 \r\n")
-        scan.cells = getCellsVoltages()
+        val voltages = getCellsVoltages().toDoubleArray()
         App.socketManager?.readObd("ATSH7E4 \r\n")
-        scan.capacity = getCapacity()
-        scan.socRawHd = getSocRawHd()
-        scan.socDisplayed = getSocRawDisplayed()
-        return scan
+        val capacity = getCapacity()
+        val socRawHd = getSocRawHd()
+        val socDisplayed = getSocRawDisplayed()
+        val min = voltages.min()
+        val max = voltages.max()
+        val avg = voltages.average()
+        val spread = max - min
+
+        val vin = "" // TODO resolve
+         // TODO resolve odometer
+
+
+        return ScanResultEntry(
+            cells = voltages,
+            maxCell = max,
+            minCell = min,
+            avgCell = avg,
+            cellSpread = spread,
+            socDisplayed = socDisplayed,
+            socRawHd = socRawHd,
+            capacity = capacity,
+            odometer = 0,
+            vin = vin,
+            timestamp = System.currentTimeMillis())
     }
-
-
 }

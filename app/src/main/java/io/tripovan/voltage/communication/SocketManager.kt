@@ -5,8 +5,6 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.util.Log
-import io.tripovan.voltage.data.ScanResult
-import io.tripovan.voltage.obd2.Volt2Obd2Impl
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream

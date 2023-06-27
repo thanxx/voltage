@@ -15,36 +15,65 @@ import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.highlight.Highlight
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import io.tripovan.voltage.App
 import io.tripovan.voltage.R
 import io.tripovan.voltage.communication.SocketManager
-import io.tripovan.voltage.data.ScanResult
+import io.tripovan.voltage.communication.obd2.Volt2Obd2Impl
+import io.tripovan.voltage.data.ScanResultEntry
 import io.tripovan.voltage.databinding.FragmentDashboardBinding
-import io.tripovan.voltage.obd2.Volt2Obd2Impl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.Date
 
-class DashboardFragment : Fragment() {
+class DashboardFragment : Fragment(),
+    OnChartValueSelectedListener {
 
     private var _binding: FragmentDashboardBinding? = null
     private val binding get() = _binding!!
     private var socketManager: SocketManager? = null
+    private lateinit var dashboardViewModel: DashboardViewModel
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val dashboardViewModel =
+        dashboardViewModel =
             ViewModelProvider(this).get(DashboardViewModel::class.java)
 
         _binding = FragmentDashboardBinding.inflate(inflater, container, false)
         val root: View = binding.root
+
+
         val textView: TextView = binding.textDashboard
+        val cellsSummary: TextView = binding.cellsSummary
+        val spreadTextView: TextView = binding.spread
+        val selectedCell: TextView = binding.selectedCell
+
         dashboardViewModel.summary.observe(viewLifecycleOwner) {
             textView.text = it
+        }
+        dashboardViewModel.cellsSummary.observe(viewLifecycleOwner) {
+            cellsSummary.text = it
+        }
+        dashboardViewModel.spread.observe(viewLifecycleOwner) {
+            spreadTextView.text = String.format("Spread: %.3f V", it)
+            spreadTextView.setTextColor(Color.GREEN)
+            if (it > 0.120) {
+                spreadTextView.setTextColor(Color.RED)
+            }
+            if (it > 0.90) {
+                spreadTextView.setTextColor(Color.YELLOW)
+            }
+
+        }
+        dashboardViewModel.selectedCell.observe(viewLifecycleOwner) {
+            selectedCell.text = it
         }
 
         val sharedPref = context?.getSharedPreferences("voltage_settings", Context.MODE_PRIVATE)
@@ -52,7 +81,7 @@ class DashboardFragment : Fragment() {
 
         val button = binding.scan
         try {
-            var bluetoothManager = App.instance.getBluetoothManager()
+            val bluetoothManager = App.instance.getBluetoothManager()
             if (bluetoothManager != null) {
                 socketManager = App.instance.getBluetoothManager()
             }
@@ -79,26 +108,24 @@ class DashboardFragment : Fragment() {
 
                 GlobalScope.launch {
 
-                    var scan = ScanResult()
+                    var scan: ScanResultEntry? = null
                     // Perform work in the background
                     try {
+                        // todo select vehicle implementation depending on app settings
                         scan = Volt2Obd2Impl().scan()
+                        if (scan.cells.isNotEmpty()) {
+                            App.database.scanResultDao().insert(scan)
+                        }
                     } catch (e: Exception) {
                         e.message?.let { it1 -> App.instance.showToast(it1) }
                     }
 
                     // Update UI or perform other operations with the result
                     withContext(Dispatchers.Main) {
-                        val capacity = scan.capacity
-                        val socRawHd = scan.socRawHd
-                        val socDisplayed = scan.socDisplayed
-                        if (scan.cells.isNotEmpty()) {
-                            dashboardViewModel.updateCells(scan.cells)
-                            dashboardViewModel.updateSummary("Capacity: $capacity \nSoC Raw HD: $socRawHd \nSoC Displayed: $socDisplayed")
-                        }
-                        spinner.visibility = View.GONE
+                        updateUI(scan)
                     }
                 }
+                spinner.visibility = View.GONE
             }
         }
 
@@ -107,8 +134,8 @@ class DashboardFragment : Fragment() {
         val barChart: BarChart = binding.barChart
         dashboardViewModel.cells.observe(viewLifecycleOwner) {
             val entries = mutableListOf<BarEntry>()
-            for (index in it.indices) {
-                entries.add(BarEntry(index.toFloat(), it[index].toFloat()))
+            for (index in it.cells.indices) {
+                entries.add(BarEntry(index.toFloat(), it.cells[index].toFloat()))
             }
             val dataSet = BarDataSet(entries, "BarDataSet")
             dataSet.color = Color.BLUE
@@ -121,22 +148,82 @@ class DashboardFragment : Fragment() {
             barChart.data = data
 
             // Customize the appearance of the BarChart
-            barChart.setFitBars(true)
-            barChart.setDrawValueAboveBar(true)
+            barChart.setFitBars(false)
+            barChart.setDrawValueAboveBar(false)
+
+            barChart.setDrawMarkers(false)
+
+            barChart.isAutoScaleMinMaxEnabled = false
             barChart.description.isEnabled = false
             barChart.xAxis.isEnabled = false
             barChart.axisRight.isEnabled = false
             barChart.legend.isEnabled = false
+            barChart.setMaxVisibleValueCount(1)
+            barChart.setOnChartValueSelectedListener(this)
 
             // Refresh the BarChart
             barChart.invalidate()
         }
+
+        GlobalScope.launch {
+
+            var scan: ScanResultEntry? = null
+            // Perform work in the background
+            try {
+                scan = App.database.scanResultDao().getAllScanResults().last()
+
+            } catch (e: Exception) {
+                e.message?.let { it1 -> App.instance.showToast(it1) }
+            }
+
+            // Update UI or perform other operations with the result
+            withContext(Dispatchers.Main) {
+                updateUI(scan)
+            }
+        }
+
         return root
     }
 
+    private fun updateUI(scan: ScanResultEntry?) {
+        if (scan != null) {
+            val capacity = scan.capacity
+            val socRawHd = scan.socRawHd
+            val socDisplayed = scan.socDisplayed
+            if (scan.cells.isNotEmpty()) {
+                dashboardViewModel.updateScan(scan)
+                dashboardViewModel.updateSummary(
+                    String.format(
+                        "Date: %s \nCapacity: %.3f KWh\nSoC Raw HD: %.1f %%\nSoC Displayed: %.1f %%",
+                        Date(scan.timestamp).toString(), capacity, socRawHd, socDisplayed
+                    )
+                )
+                dashboardViewModel.updateCellsSummary(String.format(
+                    "min: %.3fV [#%s], max: %.3fV [#%s], avg: %.3fV",
+                    scan.minCell,
+                    scan.cells.indices.minBy { scan.cells[it] } + 1,
+                    scan.maxCell,
+                    scan.cells.indices.maxBy { scan.cells[it] } + 1,
+                    scan.avgCell))
+                dashboardViewModel.updateSpread(scan.cellSpread)
+            }
+        }
+
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onValueSelected(e: Entry?, h: Highlight?) {
+        if (e != null) {
+            val entry = e as BarEntry
+            dashboardViewModel.updateSelectedCell(String.format("Selected cell: #%d, %.3f V", entry.x.toInt() + 1, entry.y))
+        }
+    }
+
+    override fun onNothingSelected() {
+        dashboardViewModel.updateSelectedCell("")
     }
 }

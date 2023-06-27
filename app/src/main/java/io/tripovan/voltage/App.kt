@@ -3,7 +3,9 @@ package io.tripovan.voltage
 import android.app.Application
 import android.content.Context
 import android.widget.Toast
+import androidx.room.Room
 import io.tripovan.voltage.communication.SocketManager
+import io.tripovan.voltage.data.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -12,6 +14,7 @@ class App : Application() {
         lateinit var instance: App
             private set
         var socketManager: SocketManager? = null
+        lateinit var database: AppDatabase
 
     }
 
@@ -27,6 +30,12 @@ class App : Application() {
         if (adapterAddress != null) {
             instance.initBluetooth(adapterAddress)
         }
+        database = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java,
+            "voltageDB1"
+        )
+            .build()
     }
 
     override fun onTerminate() {
@@ -34,7 +43,7 @@ class App : Application() {
         instance.getBluetoothManager()?.bluetoothSocket?.close()
     }
 
-    fun initBluetooth(address: String){
+    fun initBluetooth(address: String) {
         socketManager = SocketManager(address)
     }
 
