@@ -31,6 +31,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val navView: BottomNavigationView = binding.navView
 
         // Check BT permissions
         if (ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_DENIED) {
@@ -44,19 +45,21 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this@MainActivity, "Bluetooth error, please check permissions", Toast.LENGTH_SHORT).show()
         }
 
+
+
+
+
         val sharedPref = getSharedPreferences("voltage_settings", Context.MODE_PRIVATE)
         sharedPreferencesChangeListener = SharedPreferencesChangeListener(this, sharedPref) {
             val adapterAddress = sharedPref?.getString("adapter_address", null)
             if (adapterAddress != null) {
                 App.instance.initBluetooth(adapterAddress)
             }
-            // Code to execute when preferences change
-            // For example, update your UI or perform other operations
         }
 
         layout = binding.navView
         binding.loadingPanel.visibility = View.GONE
-        val navView: BottomNavigationView = binding.navView
+
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
@@ -67,6 +70,9 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+        if (!sharedPref?.getString("adapter_address", null).isNullOrEmpty()) {
+            navView.selectedItemId = R.id.navigation_dashboard
+        }
     }
 
     override fun onDestroy() {
