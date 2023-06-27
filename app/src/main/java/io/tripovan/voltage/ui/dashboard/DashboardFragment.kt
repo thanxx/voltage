@@ -199,7 +199,7 @@ class DashboardFragment : Fragment(),
                     )
                 )
                 dashboardViewModel.updateCellsSummary(String.format(
-                    "min: %.3fV [#%s], max: %.3fV [#%s], avg: %.3fV",
+                    "min: %.3f V [#%s], max: %.3f V [#%s], avg: %.3f V",
                     scan.minCell,
                     scan.cells.indices.minBy { scan.cells[it] } + 1,
                     scan.maxCell,
