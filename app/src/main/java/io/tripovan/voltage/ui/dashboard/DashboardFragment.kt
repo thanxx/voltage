@@ -225,6 +225,6 @@ class DashboardFragment : Fragment(),
     }
 
     override fun onNothingSelected() {
-        dashboardViewModel.updateSelectedCell("")
+        dashboardViewModel.updateSelectedCell(" ")
     }
 }
