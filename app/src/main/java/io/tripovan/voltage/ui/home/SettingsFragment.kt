@@ -29,7 +29,9 @@ class SettingsFragment : Fragment() {
         val sharedPref = context?.getSharedPreferences("voltage_settings", Context.MODE_PRIVATE)
         val adapterAddress = sharedPref?.getString("adapter_address", null)
 
+
         _binding = FragmentSettingsBinding.inflate(inflater, container, false)
+        val textView: TextView = binding.selectedDevice
         val root: View = binding.root
         val button = binding.connect
         button.visibility = View.GONE
@@ -37,14 +39,14 @@ class SettingsFragment : Fragment() {
         var btDevices = SocketManager.getPairedDevices()
         settingsViewModel.updateDevicesList(btDevices)
         if (btDevices.isEmpty()) {
-            settingsViewModel.updateText("Make sure you have paired your OBD2 adapter and/or turned on Bluetooth")
+            textView.text = "Make sure you have paired your OBD2 adapter and/or turned on Bluetooth"
         } else {
-            settingsViewModel.updateText("Select OBD2 adapter")
+            textView.text = "Select OBD2 adapter"
         }
 
-        if (adapterAddress != null) {
-            settingsViewModel.updateText("Selected adapter: $adapterAddress")
-        }
+//        if (adapterAddress != null) {
+//            settingsViewModel.updateText("")
+//        }
 
 
         devicesView = binding.devices
@@ -56,9 +58,9 @@ class SettingsFragment : Fragment() {
             adapter.updateList(itemList)
         }
 
-        val textView: TextView = binding.selectedDevice
-        settingsViewModel.text.observe(viewLifecycleOwner) { text ->
-            textView.text = text
+
+        settingsViewModel.text.observe(viewLifecycleOwner) {
+            adapter.notifyDataSetChanged()
         }
 
         return root

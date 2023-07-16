@@ -2,12 +2,16 @@ package io.tripovan.voltage
 
 import android.app.Application
 import android.content.Context
+import android.content.res.Resources
+import android.util.TypedValue
 import android.widget.Toast
+import androidx.annotation.ColorInt
 import androidx.room.Room
 import io.tripovan.voltage.communication.SocketManager
 import io.tripovan.voltage.data.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlin.properties.Delegates
 
 class App : Application() {
     companion object {
@@ -15,7 +19,6 @@ class App : Application() {
             private set
         var socketManager: SocketManager? = null
         lateinit var database: AppDatabase
-
     }
 
     override fun attachBaseContext(base: Context) {
@@ -31,11 +34,9 @@ class App : Application() {
             instance.initBluetooth(adapterAddress)
         }
         database = Room.databaseBuilder(
-            applicationContext,
-            AppDatabase::class.java,
-            "voltageDB1"
-        )
-            .build()
+            applicationContext, AppDatabase::class.java, "voltageDB1"
+        ).build()
+
     }
 
     override fun onTerminate() {

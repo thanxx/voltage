@@ -2,10 +2,5 @@
     <string name="app_name">voltage</string>
     <string name="title_home">Settings</string>
     <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
-    <string name="permission_granted">Permission for Bluetooth granted!</string>
-    <string name="permission_required">Permission for Bluetooth required...</string>
-    <string name="ok">OK</string>
-
-
+    <string name="title_notifications">Charts</string>
 </resources>

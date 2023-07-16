@@ -1,8 +1,10 @@
 package io.tripovan.voltage.ui.dashboard
 
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.Color
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -62,7 +64,7 @@ class DashboardFragment : Fragment(),
             cellsSummary.text = it
         }
         dashboardViewModel.spread.observe(viewLifecycleOwner) {
-            spreadTextView.text = String.format("Spread: %.1f mV", it * 1000)
+            spreadTextView.text = String.format("Disbalance: %.1f mV", it * 1000)
             spreadTextView.setTextColor(Color.GREEN)
             if (it > 0.120) {
                 spreadTextView.setTextColor(Color.RED)
@@ -126,6 +128,17 @@ class DashboardFragment : Fragment(),
             }
         }
 
+        val typedValue = TypedValue()
+        val theme: Resources.Theme = requireContext().theme
+        theme.resolveAttribute(
+            com.google.android.material.R.attr.colorOnSecondary,
+            typedValue,
+            true
+        )
+        val color = typedValue.data
+        theme.resolveAttribute(com.google.android.material.R.attr.colorAccent, typedValue, true)
+        val accentColor = typedValue.data
+
 
         val barChart: BarChart = binding.barChart
         dashboardViewModel.cells.observe(viewLifecycleOwner) {
@@ -140,6 +153,7 @@ class DashboardFragment : Fragment(),
             data.barWidth = 0.9f
 
             barChart.data = data
+            barChart.axisLeft.textColor = color
 
             barChart.setFitBars(false)
             barChart.setDrawValueAboveBar(false)
@@ -194,16 +208,15 @@ class DashboardFragment : Fragment(),
                     )
                 )
                 dashboardViewModel.updateCellsSummary(String.format(
-                    "min: %.3f V [#%s], max: %.3f V [#%s], avg: %.3f V",
+                    "Min: %.3f V [#%s], Avg: %.3f V, Max: %.3f V [#%s]",
                     scan.minCell,
                     scan.cells.indices.minBy { scan.cells[it] } + 1,
+                    scan.avgCell,
                     scan.maxCell,
-                    scan.cells.indices.maxBy { scan.cells[it] } + 1,
-                    scan.avgCell))
+                    scan.cells.indices.maxBy { scan.cells[it] } + 1))
                 dashboardViewModel.updateSpread(scan.cellSpread)
             }
         }
-
     }
 
     override fun onDestroyView() {

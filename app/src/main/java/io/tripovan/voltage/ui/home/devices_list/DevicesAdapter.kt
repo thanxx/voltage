@@ -3,21 +3,24 @@ package io.tripovan.voltage.ui.home.devices_list
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.content.Context
+import android.content.res.Resources.Theme
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.Toast
+import androidx.annotation.ColorInt
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import io.tripovan.voltage.R
 import io.tripovan.voltage.ui.home.SettingsViewModel
 
-class DevicesAdapter(private var dataList: List<BluetoothDevice>, var fragment: Fragment) : RecyclerView.Adapter<DevicesViewHolder>() {
+class DevicesAdapter(private var dataList: List<BluetoothDevice>, var fragment: Fragment) :
+    RecyclerView.Adapter<DevicesViewHolder>() {
 
     lateinit var context: Context
     private val settingsViewModel =
         ViewModelProvider(fragment).get(SettingsViewModel::class.java)
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DevicesViewHolder {
         context = parent.context
         val view = LayoutInflater.from(parent.context).inflate(R.layout.device, parent, false)
@@ -28,20 +31,39 @@ class DevicesAdapter(private var dataList: List<BluetoothDevice>, var fragment: 
     override fun onBindViewHolder(holder: DevicesViewHolder, position: Int) {
         holder.nameView.text = dataList[position].name
         holder.addressView.text = dataList[position].address
+
+
+        val typedValue = TypedValue()
+        val theme: Theme = holder.nameView.context.theme
+        theme.resolveAttribute(
+            com.google.android.material.R.attr.colorOnSecondary,
+            typedValue,
+            true
+        )
+        val color = typedValue.data
+        theme.resolveAttribute(com.google.android.material.R.attr.colorAccent, typedValue, true)
+        val accentColor = typedValue.data
+
         val adapterAddress = dataList[position].address
+        val sharedPref = context.getSharedPreferences("voltage_settings", Context.MODE_PRIVATE)
+        val selectedAddress = sharedPref.getString("adapter_address", null)
+        if (selectedAddress != null) {
+
+            if (dataList[position].address == selectedAddress) {
+                holder.nameView.setTextColor(accentColor)
+                holder.addressView.setTextColor(accentColor)
+            } else {
+                holder.nameView.setTextColor(color)
+                holder.addressView.setTextColor(color)
+            }
+        }
+
         holder.itemView.setOnClickListener {
 
-            val sharedPref = context.getSharedPreferences("voltage_settings", Context.MODE_PRIVATE)
             val editor = sharedPref.edit()
             editor.putString("adapter_address", adapterAddress)
             editor.apply()
             settingsViewModel.updateText(adapterAddress)
-            var name = dataList[position].name
-            Toast.makeText(context, "$name is selected", Toast.LENGTH_SHORT).show()
-
-            val navView: BottomNavigationView =
-                fragment.requireActivity().findViewById(R.id.nav_view)
-            navView.selectedItemId = R.id.navigation_dashboard
         }
     }
 
@@ -49,9 +71,8 @@ class DevicesAdapter(private var dataList: List<BluetoothDevice>, var fragment: 
         return dataList.size
     }
 
-    fun updateList(list: List<BluetoothDevice>){
+    fun updateList(list: List<BluetoothDevice>) {
         dataList = list
         notifyDataSetChanged()
     }
-
 }
