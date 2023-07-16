@@ -198,13 +198,14 @@ class DashboardFragment : Fragment(),
         if (scan != null) {
             val capacity = scan.capacity
             val socRawHd = scan.socRawHd
+            val vin = scan.vin
             val socDisplayed = scan.socDisplayed
             if (scan.cells.isNotEmpty()) {
                 dashboardViewModel.updateScan(scan)
                 dashboardViewModel.updateSummary(
                     String.format(
-                        "Date: %s \nCapacity: %.3f KWh\nSoC Raw HD: %.1f %%\nSoC Displayed: %.1f %%",
-                        Date(scan.timestamp).toString(), capacity, socRawHd, socDisplayed
+                        "Date: %s \nOdometer: %s km\nCapacity: %.3f KWh\nSoC Raw HD: %.1f %%\nSoC Displayed: %.1f %%",
+                        Date(scan.timestamp).toString(), scan.odometer, capacity, socRawHd, socDisplayed
                     )
                 )
                 dashboardViewModel.updateCellsSummary(String.format(

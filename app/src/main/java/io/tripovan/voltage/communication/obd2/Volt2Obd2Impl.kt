@@ -4,8 +4,11 @@ import io.tripovan.voltage.data.ScanResultEntry
 import android.util.Log
 import io.tripovan.voltage.App
 import java.math.BigInteger
+import kotlin.math.pow
 
 class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
+
+    private val TAG = "Volt2Obd2Impl"
 
     private val cellPids = arrayOf(
         "224181",
@@ -140,21 +143,50 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
         return (BigInteger(arr[arr.size - 2] + arr[arr.size - 1], 16).toDouble()) / 30
     }
 
+    private fun getVin(): String {
+        val response = App.socketManager!!.readObd( "0902" + "\r\n")
+        val cut1 = response.split("49 02 01 ")[1]
+        val cut2 = cut1.replace(Regex("[0-9]:\\s?"), "")
+        val arr = cut2.split(" ")
+
+        var vin = ""
+        arr.forEach {
+            vin += it.toInt(16).toChar()
+        }
+        return vin
+    }
+
+    private fun getOdometer():Int {
+        val arr = decodeResponse(App.socketManager!!.readObd( "2234B2" + "\r\n"), 4)
+        val a = arr[arr.size - 4]
+        val b = arr[arr.size - 3]
+        val c = arr[arr.size - 2]
+        val d = arr[arr.size - 1]
+        return  (((a * 2.0.pow(24)) + (b * 2.0.pow(16)) + (c * 2.0.pow(8)) + d) / 64).toInt()
+    }
+
     override suspend fun scan(): ScanResultEntry{
         initObd()
-
+        var vin = ""
+        try {
+            vin = getVin()
+        } catch (e: Exception) {
+            e.message?.let { Log.e(TAG, it) }
+        }
+        val odometer = getOdometer()
         App.socketManager?.readObd("ATSH7E7 \r\n")
+
         val voltages = getCellsVoltages().toDoubleArray()
         App.socketManager?.readObd("ATSH7E4 \r\n")
         val capacity = getCapacity()
         val socRawHd = getSocRawHd()
         val socDisplayed = getSocRawDisplayed()
+
         val min = voltages.min()
         val max = voltages.max()
         val avg = voltages.average()
         val spread = max - min
 
-        val vin = "" // TODO resolve
          // TODO resolve odometer
 
 
@@ -167,7 +199,7 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
             socDisplayed = socDisplayed,
             socRawHd = socRawHd,
             capacity = capacity,
-            odometer = 0,
+            odometer = odometer.toLong(),
             vin = vin,
             timestamp = System.currentTimeMillis())
     }
