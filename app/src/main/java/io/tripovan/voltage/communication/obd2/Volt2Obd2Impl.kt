@@ -113,7 +113,9 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
 
             val cellResponse = App.socketManager!!.readObd(cellPids[i] + "1" + "\r\n")
             val decoded = decodeResponse(cellResponse)
-            val voltage = (((decoded[decoded.size - 2] * 256) + decoded[decoded.size - 1]) * 5) / 65535
+            val voltage = ((
+                    (decoded[decoded.size - 2].toDouble() * 256)
+                    + decoded[decoded.size - 1].toDouble()) * 5) / 65535
             cells.add(voltage)
             Log.i("BT", voltage.toString())
         }
@@ -123,7 +125,7 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
     private fun getSocRawHd(): Double {
         val response = App.socketManager!!.readObd( "2243AF1" + "\r\n")
         val decoded = decodeResponse(response)
-        return ((decoded[decoded.size - 2] * 256) + decoded[decoded.size - 1]) * 100 / 65535
+        return ((decoded[decoded.size - 2].toDouble() * 256) + decoded[decoded.size - 1].toDouble()) * 100 / 65535
 
 
     }
@@ -131,7 +133,7 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
     private fun getSocRawDisplayed(): Double {
         val response = App.socketManager!!.readObd( "228334" + "\r\n")
         val decoded = decodeResponse(response)
-        return decoded[decoded.size - 1] * 100 / 255
+        return decoded[decoded.size - 1].toDouble() * 100 / 255
 
     }
 

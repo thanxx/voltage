@@ -102,10 +102,10 @@ class DashboardFragment : Fragment(),
             button.isEnabled = false
         } else {
             button.text = "Scan"
-            val spinner = requireActivity().findViewById<View>(R.id.loadingPanel) as ProgressBar
-            spinner.visibility = View.GONE
+            val spinner = activity?.findViewById<View>(R.id.loadingPanel) as? ProgressBar
+            spinner?.visibility = View.GONE
             button.setOnClickListener {
-                spinner.visibility = View.VISIBLE
+                spinner?.visibility = View.VISIBLE
 
                 GlobalScope.launch {
 
@@ -122,7 +122,7 @@ class DashboardFragment : Fragment(),
 
                     withContext(Dispatchers.Main) {
                         updateUI(scan)
-                        spinner.visibility = View.GONE
+                        spinner?.visibility = View.GONE
                     }
                 }
             }
