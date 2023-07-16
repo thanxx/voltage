@@ -23,16 +23,19 @@ open class Obd2Commons {
         }
     }
 
-    fun decodeResponse(input: String):ArrayList<Int> {
+    fun decodeResponse(input: String, size: Int):ArrayList<Int> {
         if (input.contains("UNABLE TO CONNECT")) {
             throw Obd2DecodeException("Turn on the vehicle! Can't connect to CAN bus")
         }
         try {
             val arr = input.split(" ")
-            val a = arr[arr.size - 2].toInt(16)
-            val b = arr[arr.size - 1].toInt(16)
+            var outputArray = ArrayList<Int>()
 
-            return arrayListOf(a, b)
+            for (i in size + 1 downTo 0) {
+                outputArray.add(arr[arr.size - i - 1].toInt(16))
+            }
+
+            return outputArray
         } catch (e: Exception) {
             throw java.lang.Exception("Can't decode input: $input, reason: ${e.message}")
         }

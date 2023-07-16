@@ -112,7 +112,7 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
         for (i in 0..95) {
 
             val cellResponse = App.socketManager!!.readObd(cellPids[i] + "1" + "\r\n")
-            val decoded = decodeResponse(cellResponse)
+            val decoded = decodeResponse(cellResponse, 2)
             val voltage = ((
                     (decoded[decoded.size - 2].toDouble() * 256)
                     + decoded[decoded.size - 1].toDouble()) * 5) / 65535
@@ -124,25 +124,20 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
 
     private fun getSocRawHd(): Double {
         val response = App.socketManager!!.readObd( "2243AF1" + "\r\n")
-        val decoded = decodeResponse(response)
+        val decoded = decodeResponse(response, 2)
         return ((decoded[decoded.size - 2].toDouble() * 256) + decoded[decoded.size - 1].toDouble()) * 100 / 65535
-
-
     }
 
     private fun getSocRawDisplayed(): Double {
         val response = App.socketManager!!.readObd( "228334" + "\r\n")
-        val decoded = decodeResponse(response)
+        val decoded = decodeResponse(response, 2)
         return decoded[decoded.size - 1].toDouble() * 100 / 255
-
     }
 
     private fun getCapacity(): Double {
         val response = App.socketManager!!.readObd( "2241A31" + "\r\n")
         val arr = response.split(" ")
-
         return (BigInteger(arr[arr.size - 2] + arr[arr.size - 1], 16).toDouble()) / 30
-
     }
 
     override suspend fun scan(): ScanResultEntry{
