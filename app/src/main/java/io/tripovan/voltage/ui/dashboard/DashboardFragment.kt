@@ -147,10 +147,10 @@ class DashboardFragment : Fragment(),
                 entries.add(BarEntry(index.toFloat(), it.cells[index].toFloat()))
             }
             val dataSet = BarDataSet(entries, "BarDataSet")
-            dataSet.color = Color.BLUE
+            dataSet.color = Color.GRAY
 
             val data = BarData(dataSet)
-            data.barWidth = 0.9f
+            data.barWidth = 0.3f
 
             barChart.data = data
             barChart.axisLeft.textColor = color

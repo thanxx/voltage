@@ -187,7 +187,6 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
         val avg = voltages.average()
         val spread = max - min
 
-         // TODO resolve odometer
 
 
         return ScanResultEntry(
