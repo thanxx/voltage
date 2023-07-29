@@ -10,6 +10,8 @@ import androidx.room.Room
 import io.tripovan.voltage.communication.SocketManager
 import io.tripovan.voltage.data.AppDatabase
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.properties.Delegates
 
@@ -31,12 +33,16 @@ class App : Application() {
         val sharedPref = getSharedPreferences("voltage_settings", Context.MODE_PRIVATE)
         val adapterAddress = sharedPref?.getString("adapter_address", null)
         if (adapterAddress != null) {
-            instance.initBluetooth(adapterAddress)
+            try {
+                instance.initBluetooth(adapterAddress)
+            } catch (e: Exception) {
+                GlobalScope.launch { e.message?.let { showToast(it) } }
+
+            }
         }
         database = Room.databaseBuilder(
             applicationContext, AppDatabase::class.java, "voltageDB1"
         ).build()
-
     }
 
     override fun onTerminate() {
