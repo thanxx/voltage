@@ -2,10 +2,7 @@ package io.tripovan.voltage
 
 import android.app.Application
 import android.content.Context
-import android.content.res.Resources
-import android.util.TypedValue
 import android.widget.Toast
-import androidx.annotation.ColorInt
 import androidx.room.Room
 import io.tripovan.voltage.communication.SocketManager
 import io.tripovan.voltage.data.AppDatabase
@@ -13,7 +10,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.properties.Delegates
 
 class App : Application() {
     companion object {

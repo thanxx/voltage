@@ -112,20 +112,20 @@ class DashboardFragment : Fragment(),
                     var scan: ScanResultEntry? = null
                     var retryCount = 3
                     while (retryCount > 0) {
-                        withContext(Dispatchers.Main){
+                        withContext(Dispatchers.Main) {
                             spinner?.visibility = View.VISIBLE
                         }
                         try {
                             // todo select vehicle implementation depending on app settings
                             scan = Volt2Obd2Impl().scan()
 
-                                if (scan.odometer > 0) {
-                                    retryCount = 0
-                                }
+                            if (scan.odometer > 0) {
+                                retryCount = 0
+                            }
 
-                                if (scan.cells.isNotEmpty()) {
-                                    App.database.scanResultDao().insert(scan)
-                                }
+                            if (scan.cells.isNotEmpty()) {
+                                App.database.scanResultDao().insert(scan)
+                            }
 
                         } catch (e: Exception) {
                             e.message?.let { it1 -> App.instance.showToast(it1) }

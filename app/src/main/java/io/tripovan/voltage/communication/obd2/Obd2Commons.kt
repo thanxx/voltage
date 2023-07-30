@@ -2,7 +2,6 @@ package io.tripovan.voltage.communication.obd2
 
 import io.tripovan.voltage.App
 import io.tripovan.voltage.communication.SocketManager
-import java.math.BigInteger
 
 open class Obd2Commons {
     private val socketManager: SocketManager = App.socketManager!!
@@ -23,7 +22,7 @@ open class Obd2Commons {
         }
     }
 
-    fun decodeResponse(input: String, size: Int):ArrayList<Int> {
+    fun decodeResponse(input: String, size: Int): ArrayList<Int> {
         if (input.contains("UNABLE TO CONNECT") || input.contains("NO DATA")) {
             throw Obd2DecodeException("Most likely, the vehicle is turned off. Turn it on to read data")
         }

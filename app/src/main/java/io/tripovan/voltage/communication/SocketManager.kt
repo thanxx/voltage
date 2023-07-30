@@ -22,6 +22,7 @@ class SocketManager constructor(private val address: String) {
     companion object {
 
         private val bluetoothAdapter: BluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+
         @SuppressLint("MissingPermission")
         fun getPairedDevices(): List<BluetoothDevice> {
             val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter.bondedDevices
@@ -47,7 +48,6 @@ class SocketManager constructor(private val address: String) {
         }
         Log.i("BT", "Socket initialized")
     }
-
 
 
     @SuppressLint("MissingPermission")

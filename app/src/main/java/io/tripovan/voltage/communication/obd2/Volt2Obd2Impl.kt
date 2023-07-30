@@ -1,8 +1,8 @@
 package io.tripovan.voltage.communication.obd2
 
-import io.tripovan.voltage.data.ScanResultEntry
 import android.util.Log
 import io.tripovan.voltage.App
+import io.tripovan.voltage.data.ScanResultEntry
 import java.math.BigInteger
 import kotlin.math.pow
 
@@ -118,7 +118,7 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
             val decoded = decodeResponse(cellResponse, 2)
             val voltage = ((
                     (decoded[decoded.size - 2].toDouble() * 256)
-                    + decoded[decoded.size - 1].toDouble()) * 5) / 65535
+                            + decoded[decoded.size - 1].toDouble()) * 5) / 65535
             cells.add(voltage)
             Log.i("BT", voltage.toString())
         }
@@ -126,25 +126,25 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
     }
 
     private fun getSocRawHd(): Double {
-        val response = App.socketManager!!.readObd( "2243AF1" + "\r\n")
+        val response = App.socketManager!!.readObd("2243AF1" + "\r\n")
         val decoded = decodeResponse(response, 2)
         return ((decoded[decoded.size - 2].toDouble() * 256) + decoded[decoded.size - 1].toDouble()) * 100 / 65535
     }
 
     private fun getSocRawDisplayed(): Double {
-        val response = App.socketManager!!.readObd( "228334" + "\r\n")
+        val response = App.socketManager!!.readObd("228334" + "\r\n")
         val decoded = decodeResponse(response, 2)
         return decoded[decoded.size - 1].toDouble() * 100 / 255
     }
 
     private fun getCapacity(): Double {
-        val response = App.socketManager!!.readObd( "2241A31" + "\r\n")
+        val response = App.socketManager!!.readObd("2241A31" + "\r\n")
         val arr = response.split(" ")
         return (BigInteger(arr[arr.size - 2] + arr[arr.size - 1], 16).toDouble()) / 30
     }
 
     private fun getVin(): String {
-        val response = App.socketManager!!.readObd( "0902" + "\r\n")
+        val response = App.socketManager!!.readObd("0902" + "\r\n")
         val cut1 = response.split("49 02 01 ")[1]
         val cut2 = cut1.replace(Regex("[0-9]:\\s?"), "")
         val arr = cut2.split(" ")
@@ -156,16 +156,16 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
         return vin
     }
 
-    private fun getOdometer():Int {
-        val arr = decodeResponse(App.socketManager!!.readObd( "2234B2" + "\r\n"), 4)
+    private fun getOdometer(): Int {
+        val arr = decodeResponse(App.socketManager!!.readObd("2234B2" + "\r\n"), 4)
         val a = arr[arr.size - 4]
         val b = arr[arr.size - 3]
         val c = arr[arr.size - 2]
         val d = arr[arr.size - 1]
-        return  (((a * 2.0.pow(24)) + (b * 2.0.pow(16)) + (c * 2.0.pow(8)) + d) / 64).toInt()
+        return (((a * 2.0.pow(24)) + (b * 2.0.pow(16)) + (c * 2.0.pow(8)) + d) / 64).toInt()
     }
 
-    override suspend fun scan(): ScanResultEntry{
+    override suspend fun scan(): ScanResultEntry {
         initObd()
         var vin = ""
         var odometer = 0
@@ -203,6 +203,7 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
             capacity = capacity,
             odometer = odometer.toLong(),
             vin = vin,
-            timestamp = System.currentTimeMillis())
+            timestamp = System.currentTimeMillis()
+        )
     }
 }
