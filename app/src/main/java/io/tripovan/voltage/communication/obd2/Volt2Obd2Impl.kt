@@ -168,12 +168,15 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
     override suspend fun scan(): ScanResultEntry{
         initObd()
         var vin = ""
+        var odometer = 0
+
         try {
             vin = getVin()
+            odometer = getOdometer()
         } catch (e: Exception) {
             e.message?.let { Log.e(TAG, it) }
         }
-        val odometer = getOdometer()
+
         App.socketManager?.readObd("ATSH7E7 \r\n")
 
         val voltages = getCellsVoltages().toDoubleArray()

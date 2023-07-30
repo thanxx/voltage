@@ -103,28 +103,44 @@ class DashboardFragment : Fragment(),
         } else {
             button.text = "Scan"
             val spinner = activity?.findViewById<View>(R.id.loadingPanel) as? ProgressBar
-            spinner?.visibility = View.GONE
+            //spinner?.visibility = View.GONE
             button.setOnClickListener {
-                spinner?.visibility = View.VISIBLE
+
 
                 GlobalScope.launch {
 
                     var scan: ScanResultEntry? = null
-                    try {
-                        // todo select vehicle implementation depending on app settings
-                        scan = Volt2Obd2Impl().scan()
-                        if (scan.cells.isNotEmpty()) {
-                            App.database.scanResultDao().insert(scan)
+                    var retryCount = 3
+                    while (retryCount > 0) {
+                        withContext(Dispatchers.Main){
+                            spinner?.visibility = View.VISIBLE
                         }
-                    } catch (e: Exception) {
-                        e.message?.let { it1 -> App.instance.showToast(it1) }
-                    }
+                        try {
+                            // todo select vehicle implementation depending on app settings
+                            scan = Volt2Obd2Impl().scan()
 
-                    withContext(Dispatchers.Main) {
-                        updateUI(scan)
-                        spinner?.visibility = View.GONE
+                                if (scan.odometer > 0) {
+                                    retryCount = 0
+                                }
+
+                                if (scan.cells.isNotEmpty()) {
+                                    App.database.scanResultDao().insert(scan)
+                                }
+
+                        } catch (e: Exception) {
+                            e.message?.let { it1 -> App.instance.showToast(it1) }
+                            retryCount--
+                        }
+
+
+                        withContext(Dispatchers.Main) {
+                            updateUI(scan)
+                            spinner?.visibility = View.GONE
+                        }
                     }
                 }
+
+
             }
         }
 
@@ -205,7 +221,11 @@ class DashboardFragment : Fragment(),
                 dashboardViewModel.updateSummary(
                     String.format(
                         "Date: %s \nOdometer: %s km\nCapacity: %.3f KWh\nSoC Raw HD: %.1f %%\nSoC Displayed: %.1f %%",
-                        Date(scan.timestamp).toString(), scan.odometer, capacity, socRawHd, socDisplayed
+                        Date(scan.timestamp).toString(),
+                        scan.odometer,
+                        capacity,
+                        socRawHd,
+                        socDisplayed
                     )
                 )
                 dashboardViewModel.updateCellsSummary(String.format(

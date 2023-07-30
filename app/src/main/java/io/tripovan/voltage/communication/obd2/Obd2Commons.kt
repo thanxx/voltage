@@ -24,8 +24,8 @@ open class Obd2Commons {
     }
 
     fun decodeResponse(input: String, size: Int):ArrayList<Int> {
-        if (input.contains("UNABLE TO CONNECT")) {
-            throw Obd2DecodeException("Turn on the vehicle! Can't connect to CAN bus")
+        if (input.contains("UNABLE TO CONNECT") || input.contains("NO DATA")) {
+            throw Obd2DecodeException("Most likely, the vehicle is turned off. Turn it on to read data")
         }
         try {
             val arr = input.split(" ")
