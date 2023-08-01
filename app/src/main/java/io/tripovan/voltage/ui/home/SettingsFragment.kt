@@ -33,8 +33,7 @@ class SettingsFragment : Fragment() {
         _binding = FragmentSettingsBinding.inflate(inflater, container, false)
         val textView: TextView = binding.selectedDevice
         val root: View = binding.root
-        val button = binding.connect
-        button.visibility = View.GONE
+
 
         var btDevices = SocketManager.getPairedDevices()
         settingsViewModel.updateDevicesList(btDevices)

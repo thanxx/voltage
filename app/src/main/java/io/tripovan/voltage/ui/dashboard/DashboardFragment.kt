@@ -51,6 +51,8 @@ class DashboardFragment : Fragment(),
         _binding = FragmentDashboardBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
+        activity?.actionBar?.show()
+
 
         val textView: TextView = binding.textDashboard
         val cellsSummary: TextView = binding.cellsSummary
@@ -102,10 +104,10 @@ class DashboardFragment : Fragment(),
             button.isEnabled = false
         } else {
             button.text = "Scan"
-            val spinner = activity?.findViewById<View>(R.id.loadingPanel) as? ProgressBar
-            //spinner?.visibility = View.GONE
-            button.setOnClickListener {
 
+
+            button.setOnClickListener {
+                val spinner = activity?.findViewById<View>(R.id.loadingPanel) as? ProgressBar
 
                 GlobalScope.launch {
 
@@ -123,24 +125,21 @@ class DashboardFragment : Fragment(),
                                 retryCount = 0
                             }
 
-                            if (scan.cells.isNotEmpty()) {
-                                App.database.scanResultDao().insert(scan)
-                            }
-
                         } catch (e: Exception) {
                             e.message?.let { it1 -> App.instance.showToast(it1) }
                             retryCount--
                         }
-
 
                         withContext(Dispatchers.Main) {
                             updateUI(scan)
                             spinner?.visibility = View.GONE
                         }
                     }
+
+                    if (scan != null) {
+                            App.database.scanResultDao().insert(scan)
+                    }
                 }
-
-
             }
         }
 
@@ -163,7 +162,7 @@ class DashboardFragment : Fragment(),
                 entries.add(BarEntry(index.toFloat(), it.cells[index].toFloat()))
             }
             val dataSet = BarDataSet(entries, "BarDataSet")
-            dataSet.color = Color.GRAY
+            dataSet.color = accentColor
 
             val data = BarData(dataSet)
             data.barWidth = 0.3f
