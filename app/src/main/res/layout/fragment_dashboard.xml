@@ -12,14 +12,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="30sp"
-        android:layout_marginTop="20sp"
+        android:layout_marginTop="40sp"
 
         android:textSize="16sp"
+        app:layout_constraintBottom_toTopOf="@id/cells_summary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/cells_summary"/>
-
+        app:layout_constraintTop_toTopOf="parent" />
 
 
     <TextView
@@ -30,10 +29,10 @@
 
         android:textSize="14sp"
 
-        app:layout_constraintTop_toBottomOf="@id/text_dashboard"
         app:layout_constraintBottom_toTopOf="@id/spread"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/text_dashboard" />
 
     <TextView
         android:id="@+id/spread"
@@ -43,24 +42,23 @@
 
 
         android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@+id/selected_cell"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/selected_cell"
-        app:layout_constraintTop_toBottomOf="@id/cells_summary"
-        />
+        app:layout_constraintTop_toBottomOf="@id/cells_summary" />
 
     <TextView
-            android:id="@+id/selected_cell"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="30sp"
+        android:id="@+id/selected_cell"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="30sp"
 
-            android:textSize="12sp"
-            app:layout_constraintTop_toBottomOf="@id/spread"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@id/barChart"
 
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/barChart" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/spread" />
 
 
     <com.github.mikephil.charting.charts.BarChart
@@ -68,25 +66,25 @@
         android:layout_width="match_parent"
         android:layout_height="150pt"
         android:layout_marginVertical="30sp"
+        app:layout_constraintBottom_toTopOf="@id/scan"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/selected_cell"
-        app:layout_constraintBottom_toTopOf="@id/scan"/>
+        app:layout_constraintTop_toBottomOf="@id/selected_cell" />
 
 
     <Button
         android:id="@+id/scan"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="100sp"
         android:layout_marginHorizontal="30sp"
+        android:layout_marginBottom="40sp"
         android:text="Scan"
-        app:icon="@drawable/ic_dashboard"
+        app:icon="@drawable/ic_scan"
         app:iconGravity="textStart"
 
-        app:iconSize="14dp"
-        app:layout_constraintTop_toBottomOf="@+id/barChart"
+        app:iconSize="18dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/barChart" />
 </androidx.constraintlayout.widget.ConstraintLayout>
