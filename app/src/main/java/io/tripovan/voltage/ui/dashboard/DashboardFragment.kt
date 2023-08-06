@@ -151,7 +151,7 @@ class DashboardFragment : Fragment(),
             true
         )
         val color = typedValue.data
-        theme.resolveAttribute(com.google.android.material.R.attr.colorAccent, typedValue, true)
+        theme.resolveAttribute(R.attr.barchartColor, typedValue, true)
         val accentColor = typedValue.data
 
 

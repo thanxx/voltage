@@ -1,0 +1,5 @@
+<resources>
+    <attr name="gradientStart" format="reference|color" />
+    <attr name="gradientEnd" format="reference|color" />
+    <attr name="barchartColor" format="reference|color" />
+</resources>
