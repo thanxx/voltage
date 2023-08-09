@@ -2,5 +2,5 @@
     <string name="app_name">voltage</string>
     <string name="title_home">Settings</string>
     <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Charts</string>
+    <string name="title_notifications">History</string>
 </resources>

@@ -18,8 +18,8 @@
         tools:layout="@layout/fragment_dashboard" />
 
     <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="io.tripovan.voltage.ui.notifications.NotificationsFragment"
+        android:id="@+id/navigation_history"
+        android:name="io.tripovan.voltage.ui.history.HistoryFragment"
         android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
+        tools:layout="@layout/fragment_history" />
 </navigation>

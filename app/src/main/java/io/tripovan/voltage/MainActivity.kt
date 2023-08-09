@@ -33,7 +33,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val navView: BottomNavigationView = binding.navView
-//        supportActionBar?.hide()
 
         // Check BT permissions
         if (ContextCompat.checkSelfPermission(
