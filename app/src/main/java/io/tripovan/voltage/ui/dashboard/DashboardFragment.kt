@@ -40,18 +40,17 @@ class DashboardFragment : Fragment(),
     private val binding get() = _binding!!
     private var socketManager: SocketManager? = null
     private lateinit var dashboardViewModel: DashboardViewModel
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         dashboardViewModel =
-            ViewModelProvider(this).get(DashboardViewModel::class.java)
+            ViewModelProvider(this)[DashboardViewModel::class.java]
 
         _binding = FragmentDashboardBinding.inflate(inflater, container, false)
         val root: View = binding.root
-
-        activity?.actionBar?.show()
 
 
         val textView: TextView = binding.textDashboard
@@ -216,12 +215,22 @@ class DashboardFragment : Fragment(),
             val vin = scan.vin
             val socDisplayed = scan.socDisplayed
             if (scan.cells.isNotEmpty()) {
+                val sharedPref = context?.getSharedPreferences("voltage_settings", Context.MODE_PRIVATE)
+                val unitsList = resources.getStringArray(R.array.distance_units).toList()
+                val units = sharedPref?.getString("distance_units", unitsList[0])
+
+                val odometerText = if (units == unitsList[0]) {
+                    "${scan.odometer} $units"
+                } else {
+                    String.format("%.2f $units", scan.odometer * 0.62137119)
+                }
+
                 dashboardViewModel.updateScan(scan)
                 dashboardViewModel.updateSummary(
                     String.format(
-                        "Date: %s \nOdometer: %s km\nCapacity: %.3f KWh\nSoC Raw HD: %.1f %%\nSoC Displayed: %.1f %%",
+                        "Date: %s \nOdometer: ~%s\nCapacity: %.3f KWh\nSoC Raw HD: %.1f %%\nSoC Displayed: %.1f %%",
                         Date(scan.timestamp).toString(),
-                        scan.odometer,
+                        odometerText,
                         capacity,
                         socRawHd,
                         socDisplayed

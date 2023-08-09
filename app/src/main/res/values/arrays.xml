@@ -1,0 +1,6 @@
+<resources>
+    <string-array name="distance_units">
+        <item>Kilometers</item>
+        <item>Miles</item>
+    </string-array>
+</resources>
