@@ -149,7 +149,7 @@ class DashboardFragment : Fragment(),
             typedValue,
             true
         )
-        val color = typedValue.data
+        val textColor = typedValue.data
         theme.resolveAttribute(R.attr.barchartColor, typedValue, true)
         val accentColor = typedValue.data
 
@@ -167,7 +167,7 @@ class DashboardFragment : Fragment(),
             data.barWidth = 0.3f
 
             barChart.data = data
-            barChart.axisLeft.textColor = color
+            barChart.axisLeft.textColor = textColor
 
             barChart.setFitBars(false)
             barChart.setDrawValueAboveBar(false)
