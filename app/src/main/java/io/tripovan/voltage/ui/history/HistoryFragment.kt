@@ -1,8 +1,8 @@
 package io.tripovan.voltage.ui.history
 
 import android.content.res.Resources
-import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
@@ -14,38 +14,41 @@ import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.highlight.Highlight
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import io.tripovan.voltage.App
-import io.tripovan.voltage.R
 import io.tripovan.voltage.data.DateXAxisFormatter
 import io.tripovan.voltage.databinding.FragmentHistoryBinding
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.Date
 
-class HistoryFragment : Fragment() {
+
+class HistoryFragment : Fragment(), OnChartValueSelectedListener {
 
     private var _binding: FragmentHistoryBinding? = null
 
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
 
+    private lateinit var capacityChart: LineChart
+    private lateinit var historyViewModel: HistoryViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val historyViewModel =
-            ViewModelProvider(this)[HistoryViewModel::class.java]
 
+        historyViewModel = ViewModelProvider(this)[HistoryViewModel::class.java]
         _binding = FragmentHistoryBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
         val textView: TextView = binding.textHistory
         historyViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
+            textView.text = "Capacity: $it"
         }
 
         val typedValue = TypedValue()
@@ -55,43 +58,73 @@ class HistoryFragment : Fragment() {
             typedValue,
             true
         )
+
+
+
+        GlobalScope.launch {
+            var historyData = App.database.scanResultDao().getAllScanResults()
+
+
+            withContext(Dispatchers.Main) {
+                historyViewModel.updateHistory(historyData)
+            }
+        }
+
         val textColor = typedValue.data
         theme.resolveAttribute(androidx.transition.R.attr.colorPrimary, typedValue, true)
         val lineColor = typedValue.data
 
-        val capacityChart = binding.capacityChart
-        GlobalScope.launch {
-            val scans = App.database.scanResultDao().getAllScanResults()
-            var capacityTimeSeries = ArrayList<Entry>()
-            scans.forEach {capacityTimeSeries.add(Entry(it.timestamp.toFloat(), it.capacity.toFloat()))}
-            withContext(Dispatchers.Main) {
-                capacityChart.xAxis.valueFormatter = DateXAxisFormatter()
+        capacityChart = binding.capacityChart
+        capacityChart.xAxis.valueFormatter = DateXAxisFormatter()
+        capacityChart.xAxis.gridColor = textColor
+        capacityChart.xAxis.textColor = textColor
+        capacityChart.xAxis.axisLineColor = textColor
+        capacityChart.legend.textColor = textColor
+        capacityChart.axisLeft.textColor = textColor
+        capacityChart.axisLeft.axisLineColor = textColor
+        capacityChart.axisRight.axisLineColor = textColor
+        capacityChart.axisRight.textColor = textColor
+        capacityChart.setDrawMarkers(true)
+        capacityChart.setOnChartValueSelectedListener(this)
 
-                val lineData = LineData()
+        historyViewModel.historyData.observe(viewLifecycleOwner){
+            var capacityTimeSeries = ArrayList<Entry>()
+            it.forEach {
+                capacityTimeSeries.add(
+                    Entry(
+                        it.timestamp.toFloat(),
+                        it.capacity.toFloat()
+                    )
+                )
                 val lineDataSet = LineDataSet(capacityTimeSeries, "Capacity, KWh")
                 lineDataSet.setDrawValues(false)
                 lineDataSet.color = lineColor
-
+                lineDataSet.setDrawHighlightIndicators(true)
+                lineDataSet.isHighlightEnabled = true
+                val lineData = LineData()
                 lineData.addDataSet(lineDataSet)
                 lineData.setValueTextColor(textColor)
                 capacityChart.data = lineData
-                capacityChart.xAxis.gridColor = textColor
-                capacityChart.xAxis.textColor = textColor
-                capacityChart.xAxis.axisLineColor = textColor
-                capacityChart.legend.textColor = textColor
-                capacityChart.axisLeft.textColor = textColor
-                capacityChart.axisLeft.axisLineColor = textColor
-                capacityChart.axisRight.axisLineColor = textColor
-                capacityChart.axisRight.textColor = textColor
 
 
                 capacityChart.invalidate()
+
             }
         }
 
 
-
         return root
+    }
+
+
+    override fun onValueSelected(e: Entry, h: Highlight?) {
+        capacityChart.highlightValue(h)
+        val dateText = Date(e.x.toLong())
+        historyViewModel.updateCapacityText("${e.y} KWh\n$dateText")
+    }
+
+    override fun onNothingSelected() {
+
     }
 
     override fun onDestroyView() {
