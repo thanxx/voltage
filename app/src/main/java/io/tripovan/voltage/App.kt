@@ -2,6 +2,7 @@ package io.tripovan.voltage
 
 import android.app.Application
 import android.content.Context
+import android.os.Build
 import android.widget.Toast
 import androidx.room.Room
 import io.tripovan.voltage.communication.SocketManager
@@ -17,6 +18,7 @@ class App : Application() {
             private set
         var socketManager: SocketManager? = null
         lateinit var database: AppDatabase
+        lateinit var appVersion: String
     }
 
     override fun attachBaseContext(base: Context) {
@@ -39,6 +41,18 @@ class App : Application() {
         database = Room.databaseBuilder(
             applicationContext, AppDatabase::class.java, "voltageDB1"
         ).build()
+
+        val packageManager = this.packageManager
+        val packageName = this.packageName
+        val versionName = packageManager.getPackageInfo(packageName, 0).versionName
+        val versionCode: Long =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                packageManager.getPackageInfo(packageName, 0).longVersionCode
+            } else {
+                packageManager.getPackageInfo(packageName, 0).versionCode.toLong()
+            }
+
+        appVersion = "Version $versionName ($versionCode)"
     }
 
     override fun onTerminate() {

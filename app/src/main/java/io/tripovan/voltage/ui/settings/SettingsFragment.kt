@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import io.tripovan.voltage.App
 import io.tripovan.voltage.R
 import io.tripovan.voltage.communication.SocketManager
 import io.tripovan.voltage.databinding.FragmentSettingsBinding
@@ -64,20 +65,8 @@ class SettingsFragment : Fragment() {
             adapter.notifyDataSetChanged()
         }
 
-
-        val packageManager = requireContext().packageManager
-        val packageName = requireContext().packageName
-        val versionName = packageManager.getPackageInfo(packageName, 0).versionName
-        val versionCode: Long =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                packageManager.getPackageInfo(packageName, 0).longVersionCode
-            } else {
-                packageManager.getPackageInfo(packageName, 0).versionCode.toLong()
-            }
-
-        val appVersion = "Version $versionName ($versionCode)\nhttps://github.com/thanxx/voltage"
         val appInfo = binding.appInfo
-        appInfo.text = appVersion
+        appInfo.text = App.appVersion + "\nhttps://github.com/thanxx/voltage"
         Linkify.addLinks(appInfo, Linkify.WEB_URLS)
 
         val unitsList = resources.getStringArray(R.array.distance_units).toList()
