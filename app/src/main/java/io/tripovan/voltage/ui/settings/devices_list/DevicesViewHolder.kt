@@ -1,4 +1,4 @@
-package io.tripovan.voltage.ui.home.devices_list
+package io.tripovan.voltage.ui.settings.devices_list
 
 import android.view.View
 import android.widget.TextView

@@ -3,4 +3,5 @@
     <string name="title_home">Settings</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">History</string>
+    <string name="link"><a href="">app GitHub page</a></string>
 </resources>

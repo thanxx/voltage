@@ -87,7 +87,7 @@ class HistoryFragment : Fragment(), OnChartValueSelectedListener {
         capacityChart.setDrawMarkers(true)
         capacityChart.setOnChartValueSelectedListener(this)
 
-        historyViewModel.historyData.observe(viewLifecycleOwner){
+        historyViewModel.historyData.observe(viewLifecycleOwner){ it ->
             var capacityTimeSeries = ArrayList<Entry>()
             it.forEach {
                 capacityTimeSeries.add(

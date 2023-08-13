@@ -1,14 +1,16 @@
-package io.tripovan.voltage.ui.home
+package io.tripovan.voltage.ui.settings
 
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.text.util.Linkify
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.Spinner
 import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,7 +18,8 @@ import androidx.recyclerview.widget.RecyclerView
 import io.tripovan.voltage.R
 import io.tripovan.voltage.communication.SocketManager
 import io.tripovan.voltage.databinding.FragmentSettingsBinding
-import io.tripovan.voltage.ui.home.devices_list.DevicesAdapter
+import io.tripovan.voltage.ui.settings.devices_list.DevicesAdapter
+
 
 class SettingsFragment : Fragment() {
     private lateinit var devicesView: RecyclerView
@@ -61,6 +64,21 @@ class SettingsFragment : Fragment() {
             adapter.notifyDataSetChanged()
         }
 
+
+        val packageManager = requireContext().packageManager
+        val packageName = requireContext().packageName
+        val versionName = packageManager.getPackageInfo(packageName, 0).versionName
+        val versionCode: Long =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                packageManager.getPackageInfo(packageName, 0).longVersionCode
+            } else {
+                packageManager.getPackageInfo(packageName, 0).versionCode.toLong()
+            }
+
+        val appVersion = "Version $versionName ($versionCode)\nhttps://github.com/thanxx/voltage"
+        val appInfo = binding.appInfo
+        appInfo.text = appVersion
+        Linkify.addLinks(appInfo, Linkify.WEB_URLS)
 
         val unitsList = resources.getStringArray(R.array.distance_units).toList()
         val units = sharedPref?.getString("distance_units", unitsList[0])

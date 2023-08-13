@@ -1,4 +1,4 @@
-package io.tripovan.voltage.ui.home.devices_list
+package io.tripovan.voltage.ui.settings.devices_list
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
@@ -7,12 +7,11 @@ import android.content.res.Resources.Theme
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.annotation.ColorInt
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import io.tripovan.voltage.R
-import io.tripovan.voltage.ui.home.SettingsViewModel
+import io.tripovan.voltage.ui.settings.SettingsViewModel
 
 class DevicesAdapter(private var dataList: List<BluetoothDevice>, var fragment: Fragment) :
     RecyclerView.Adapter<DevicesViewHolder>() {

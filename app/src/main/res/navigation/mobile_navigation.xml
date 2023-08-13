@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/navigation_settings"
-        android:name="io.tripovan.voltage.ui.home.SettingsFragment"
+        android:name="io.tripovan.voltage.ui.settings.SettingsFragment"
         android:label="@string/title_home"
         tools:layout="@layout/fragment_settings" />
 

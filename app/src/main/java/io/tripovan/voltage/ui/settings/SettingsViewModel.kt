@@ -1,4 +1,4 @@
-package io.tripovan.voltage.ui.home
+package io.tripovan.voltage.ui.settings
 
 import android.bluetooth.BluetoothDevice
 import androidx.lifecycle.LiveData
