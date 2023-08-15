@@ -256,11 +256,24 @@ class DashboardFragment : Fragment(),
     override fun onValueSelected(e: Entry?, h: Highlight?) {
         if (e != null) {
             val entry = e as BarEntry
+            val cellNo = entry.x.toInt()
+
+            var group = 1
+
+            var section = when {
+                cellNo > 84 -> 3
+                cellNo > 72 -> 3.also { group = 6 }
+                cellNo > 56 -> 2.also { group = 5 }
+                cellNo > 44 -> 2.also { group = 4 }
+                cellNo > 28 -> 1.also { group = 3 }
+                cellNo > 16 -> 1.also { group = 2 }
+                else -> 1
+            }
+
             dashboardViewModel.updateSelectedCell(
                 String.format(
-                    "Selected cell: #%d, %.3f V",
-                    entry.x.toInt() + 1,
-                    entry.y
+                    "Selected cell: #%d, %.3f V\nSection: %s, Group: %s",
+                    cellNo + 1, entry.y, section, group
                 )
             )
         }

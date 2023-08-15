@@ -76,6 +76,4 @@ class App : Application() {
             Toast.makeText(instance.applicationContext, message, Toast.LENGTH_LONG).show()
         }
     }
-
-
 }
