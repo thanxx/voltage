@@ -2,7 +2,6 @@ package io.tripovan.voltage.ui.history
 
 import android.content.res.Resources
 import android.os.Bundle
-import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View

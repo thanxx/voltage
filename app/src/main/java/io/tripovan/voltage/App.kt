@@ -3,10 +3,12 @@ package io.tripovan.voltage
 import android.app.Application
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.room.Room
 import io.tripovan.voltage.communication.SocketManager
 import io.tripovan.voltage.data.AppDatabase
+import io.tripovan.voltage.utils.Constants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -53,6 +55,7 @@ class App : Application() {
             }
 
         appVersion = "Version $versionName ($versionCode)"
+        Log.i(Constants.TAG, "Starting Voltage app, $appVersion")
     }
 
     override fun onTerminate() {

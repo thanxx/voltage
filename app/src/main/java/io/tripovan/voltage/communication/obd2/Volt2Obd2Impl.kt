@@ -3,12 +3,13 @@ package io.tripovan.voltage.communication.obd2
 import android.util.Log
 import io.tripovan.voltage.App
 import io.tripovan.voltage.data.ScanResultEntry
+import io.tripovan.voltage.utils.Constants
 import java.math.BigInteger
 import kotlin.math.pow
 
 class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
 
-    private val TAG = "Volt2Obd2Impl"
+    private val TAG = Constants.TAG
 
     private val cellPids = arrayOf(
         "224181",
@@ -120,7 +121,6 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
                     (decoded[decoded.size - 2].toDouble() * 256)
                             + decoded[decoded.size - 1].toDouble()) * 5) / 65535
             cells.add(voltage)
-            Log.i("BT", voltage.toString())
         }
         return cells
     }

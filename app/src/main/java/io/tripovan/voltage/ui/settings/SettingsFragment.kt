@@ -1,8 +1,6 @@
 package io.tripovan.voltage.ui.settings
 
 import android.content.Context
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.text.util.Linkify
 import android.view.LayoutInflater
@@ -11,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.Spinner
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,6 +19,8 @@ import io.tripovan.voltage.R
 import io.tripovan.voltage.communication.SocketManager
 import io.tripovan.voltage.databinding.FragmentSettingsBinding
 import io.tripovan.voltage.ui.settings.devices_list.DevicesAdapter
+import io.tripovan.voltage.utils.LoggingUtils
+import io.tripovan.voltage.utils.MailUtils
 
 
 class SettingsFragment : Fragment() {
@@ -88,8 +89,17 @@ class SettingsFragment : Fragment() {
                 }
             }
 
-            override fun onNothingSelected(p0: AdapterView<*>?) {
-                TODO("Not yet implemented")
+            override fun onNothingSelected(p0: AdapterView<*>?) {}
+        }
+
+        val sendLogsTextView = binding.exportLogs as TextView
+
+        sendLogsTextView.setOnClickListener {
+            try {
+                LoggingUtils().dumpLogs()
+                MailUtils().sendLogs()
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), e.message, Toast.LENGTH_LONG).show()
             }
         }
 

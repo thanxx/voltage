@@ -16,7 +16,6 @@ open class Obd2Commons {
     fun initObd() {
         if (socketManager.bluetoothSocket.isConnected) {
             socketManager.readObd(obdAtz)
-            //todo catch response and indicate OBD2 connection ???
             socketManager.readObd(obdAte)
             socketManager.readObd(obdAtsp)
         }

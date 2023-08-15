@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.util.Log
+import io.tripovan.voltage.utils.Constants
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -12,6 +13,7 @@ import java.io.OutputStream
 
 class SocketManager constructor(private val address: String) {
 
+    private val TAG = Constants.TAG
     private var inputStream: InputStream
     private var outputStream: OutputStream
 
@@ -46,7 +48,7 @@ class SocketManager constructor(private val address: String) {
                 throw Exception("Can't initialize bluetooth socket")
             }
         }
-        Log.i("BT", "Socket initialized")
+        Log.i(TAG, "Socket initialized")
     }
 
 
@@ -78,11 +80,11 @@ class SocketManager constructor(private val address: String) {
 
         // Send
         try {
-            Log.i("BT SEND", cmd)
+            Log.i(TAG, cmd)
             outputStream.write(cmd.toByteArray())
         } catch (e: Exception) {
             e.message?.let {
-                Log.e("BT SEND", it)
+                Log.e(TAG, it)
                 throw RuntimeException("Error sending data")
             }
         }
@@ -102,12 +104,10 @@ class SocketManager constructor(private val address: String) {
                     break
                 }
                 data += buffer.decodeToString()
-                //Log.d("BT RECV", data)
-
             }
 
         } catch (e: IOException) {
-            e.message?.let { Log.e("BT RECV", it) }
+            e.message?.let { Log.e(TAG, it) }
             throw Exception(e.message)
         }
 
@@ -115,7 +115,7 @@ class SocketManager constructor(private val address: String) {
         data = data.replace("\n", "")
         data = data.replace("\r", "")
         data = data.replace("SEARCHING...", "")
-        Log.i("BT RECV DATA: ", data)
+        Log.i(TAG, data)
         return data
     }
 }
