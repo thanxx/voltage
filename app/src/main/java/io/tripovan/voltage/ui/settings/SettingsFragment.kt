@@ -27,13 +27,14 @@ class SettingsFragment : Fragment() {
     private lateinit var devicesView: RecyclerView
     private lateinit var distanceUnitsSpinner: Spinner
     private lateinit var adapter: DevicesAdapter
+    private lateinit var settingsViewModel : SettingsViewModel
     private var _binding: FragmentSettingsBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
-        val settingsViewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
+        settingsViewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
 
         // init settings
         val sharedPref = App.instance.getSharedPrefs()
@@ -126,5 +127,13 @@ class SettingsFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        var btDevices = SocketManager.getPairedDevices()
+        settingsViewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
+        settingsViewModel.updateDevicesList(btDevices)
     }
 }

@@ -214,7 +214,6 @@ class DashboardFragment : Fragment(),
         if (scan != null) {
             val capacity = scan.capacity
             val socRawHd = scan.socRawHd
-            val vin = scan.vin
             val socDisplayed = scan.socDisplayed
             if (scan.cells.isNotEmpty()) {
                 val sharedPref = App.instance.getSharedPrefs()
@@ -262,8 +261,8 @@ class DashboardFragment : Fragment(),
 
             var group = 1
 
-            var section = when {
-                cellNo > 84 -> 3
+            val section = when {
+                cellNo > 84 -> 3.also { group = 7}
                 cellNo > 72 -> 3.also { group = 6 }
                 cellNo > 56 -> 2.also { group = 5 }
                 cellNo > 44 -> 2.also { group = 4 }
