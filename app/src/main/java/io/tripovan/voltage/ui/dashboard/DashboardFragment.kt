@@ -1,7 +1,5 @@
 package io.tripovan.voltage.ui.dashboard
 
-import android.app.AlertDialog
-import android.content.Context
 import android.content.res.Resources
 import android.graphics.Color
 import android.os.Bundle
@@ -137,7 +135,7 @@ class DashboardFragment : Fragment(),
                     }
 
                     if (scan != null) {
-                            App.database.scanResultDao().insert(scan)
+                        App.database.scanResultDao().insert(scan)
                     }
                 }
             }
@@ -210,7 +208,6 @@ class DashboardFragment : Fragment(),
 
         return root
     }
-
 
 
     private fun updateUI(scan: ScanResultEntry?) {
