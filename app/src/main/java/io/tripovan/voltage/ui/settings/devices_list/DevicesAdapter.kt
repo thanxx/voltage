@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
+import io.tripovan.voltage.App
 import io.tripovan.voltage.R
 import io.tripovan.voltage.ui.settings.SettingsViewModel
 
@@ -44,7 +45,7 @@ class DevicesAdapter(private var dataList: List<BluetoothDevice>, var fragment: 
         val accentColor = typedValue.data
 
         val adapterAddress = dataList[position].address
-        val sharedPref = context.getSharedPreferences("voltage_settings", Context.MODE_PRIVATE)
+        val sharedPref = App.instance.getSharedPrefs()!!
         val selectedAddress = sharedPref.getString("adapter_address", null)
         if (selectedAddress != null) {
 

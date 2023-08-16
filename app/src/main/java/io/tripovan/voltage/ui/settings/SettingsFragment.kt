@@ -1,6 +1,6 @@
 package io.tripovan.voltage.ui.settings
 
-import android.content.Context
+import android.app.AlertDialog
 import android.os.Bundle
 import android.text.util.Linkify
 import android.view.LayoutInflater
@@ -36,8 +36,7 @@ class SettingsFragment : Fragment() {
         val settingsViewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
 
         // init settings
-        val sharedPref = context?.getSharedPreferences("voltage_settings", Context.MODE_PRIVATE)
-        val adapterAddress = sharedPref?.getString("adapter_address", null)
+        val sharedPref = App.instance.getSharedPrefs()
 
         _binding = FragmentSettingsBinding.inflate(inflater, container, false)
         val textView: TextView = binding.selectedDevice
@@ -103,7 +102,25 @@ class SettingsFragment : Fragment() {
             }
         }
 
+        if (sharedPref?.getBoolean("firstRun", true) == true) {
+            showFirstRunAlertDialog()
+        }
         return root
+    }
+
+    private fun showFirstRunAlertDialog() {
+        val alertDialogBuilder = AlertDialog.Builder(requireContext())
+        alertDialogBuilder.setTitle("Welcome!")
+        alertDialogBuilder.setMessage("This app was tested with 2016 Volt. If you experience errors, please send logs, open an issue on GitHub (in Settings). Also, this app is open source, so you are welcome to make a pull request or provide feedback")
+        alertDialogBuilder.setPositiveButton("OK") { _, _ ->
+            var editor = App.instance.getSharedPrefs()?.edit()
+            editor?.putBoolean("firstRun", false)
+            editor?.apply()
+        }
+        alertDialogBuilder.setCancelable(false)
+
+        val alertDialog = alertDialogBuilder.create()
+        alertDialog.show()
     }
 
     override fun onDestroyView() {

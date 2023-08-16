@@ -2,6 +2,7 @@ package io.tripovan.voltage
 
 import android.app.Application
 import android.content.Context
+import android.content.SharedPreferences
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
@@ -30,7 +31,7 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
-        val sharedPref = getSharedPreferences("voltage_settings", Context.MODE_PRIVATE)
+        val sharedPref = getSharedPrefs()
         val adapterAddress = sharedPref?.getString("adapter_address", null)
         if (adapterAddress != null) {
             try {
@@ -75,5 +76,9 @@ class App : Application() {
         withContext(Dispatchers.Main) {
             Toast.makeText(instance.applicationContext, message, Toast.LENGTH_LONG).show()
         }
+    }
+
+    fun getSharedPrefs() : SharedPreferences? {
+        return this.getSharedPreferences("voltage_settings", Context.MODE_PRIVATE)
     }
 }

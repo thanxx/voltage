@@ -1,5 +1,6 @@
 package io.tripovan.voltage.ui.dashboard
 
+import android.app.AlertDialog
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Color
@@ -78,7 +79,7 @@ class DashboardFragment : Fragment(),
             selectedCell.text = it
         }
 
-        val sharedPref = context?.getSharedPreferences("voltage_settings", Context.MODE_PRIVATE)
+        val sharedPref = App.instance.getSharedPrefs()
         val adapterAddress = sharedPref?.getString("adapter_address", null)
 
         val button = binding.scan
@@ -205,8 +206,12 @@ class DashboardFragment : Fragment(),
             }
         }
 
+
+
         return root
     }
+
+
 
     private fun updateUI(scan: ScanResultEntry?) {
         if (scan != null) {
@@ -215,7 +220,7 @@ class DashboardFragment : Fragment(),
             val vin = scan.vin
             val socDisplayed = scan.socDisplayed
             if (scan.cells.isNotEmpty()) {
-                val sharedPref = context?.getSharedPreferences("voltage_settings", Context.MODE_PRIVATE)
+                val sharedPref = App.instance.getSharedPrefs()
                 val unitsList = resources.getStringArray(R.array.distance_units).toList()
                 val units = sharedPref?.getString("distance_units", unitsList[0])
 
@@ -282,4 +287,6 @@ class DashboardFragment : Fragment(),
     override fun onNothingSelected() {
         dashboardViewModel.updateSelectedCell(" ")
     }
+
+
 }

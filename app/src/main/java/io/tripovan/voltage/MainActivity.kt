@@ -2,6 +2,7 @@ package io.tripovan.voltage
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
@@ -11,6 +12,7 @@ import android.view.Window
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -59,9 +61,9 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        val sharedPref = getSharedPreferences("voltage_settings", Context.MODE_PRIVATE)
-        sharedPreferencesChangeListener = SharedPreferencesChangeListener(this, sharedPref) {
-            val adapterAddress = sharedPref?.getString("adapter_address", null)
+        val sharedPref = App.instance.getSharedPrefs()
+        sharedPreferencesChangeListener = SharedPreferencesChangeListener(this, sharedPref!!) {
+            val adapterAddress = sharedPref.getString("adapter_address", null)
             if (adapterAddress != null) {
                 App.instance.initBluetooth(adapterAddress)
             }
@@ -71,15 +73,15 @@ class MainActivity : AppCompatActivity() {
         binding.loadingPanel.visibility = View.GONE
 
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
 
-        //setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
-        if (!sharedPref?.getString("adapter_address", null).isNullOrEmpty()) {
+        if (!sharedPref.getString("adapter_address", null).isNullOrEmpty()) {
             navView.selectedItemId = R.id.navigation_dashboard
         }
+
     }
+
+
 
     override fun onDestroy() {
         super.onDestroy()
