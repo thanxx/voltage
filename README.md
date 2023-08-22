@@ -14,7 +14,7 @@ So users of 2017, 2018, and 2019 years, please confirm that it is working with y
 
 ## TODO / With the help of the community and contributors, it would be cool to:
 - Collect other useful PIDs https://github.com/thanxx/voltage/issues/26
-- Implement `VehicleScanResultsProvider` for Volt 1, Bolt, etc.
+- Implement `VehicleScanResultsProvider` for Volt 1, Bolt, etc. https://github.com/thanxx/voltage/issues/7
 - Select Vehicle by VIN in Settings (in case when a user has more than one)
 - Historical and statistical aggregation of collected cell data. Visualize other useful values https://github.com/thanxx/voltage/issues/16
 - if possible: Prediction of cell degradation, BECM, and other failures https://github.com/thanxx/voltage/issues/7
