@@ -1,8 +1,8 @@
 # Voltage
 
-<img src="https://github.com/thanxx/voltage/assets/21316174/4c76583f-05a2-43da-9dd8-96082d672ffc" width=33% height=33%>
-<img src="https://github.com/thanxx/voltage/assets/21316174/bca18310-a5f3-4a33-9bfd-85606d1f1349" width=33% height=33%>
-<img src="https://github.com/thanxx/voltage/assets/21316174/7b85c7dd-b00f-4725-94a6-836a03a0cfbd" width=33% height=33%>
+<img src="https://github.com/thanxx/voltage/assets/21316174/4c76583f-05a2-43da-9dd8-96082d672ffc" width=25% height=25%>
+<img src="https://github.com/thanxx/voltage/assets/21316174/bca18310-a5f3-4a33-9bfd-85606d1f1349" width=25% height=25%>
+<img src="https://github.com/thanxx/voltage/assets/21316174/7b85c7dd-b00f-4725-94a6-836a03a0cfbd" width=25% height=25%>
 
 An Android app for reading ECU data (battery, etc) from the GM Chevrolet Volt 2 via a generic ELM327 Bluetooth adapter. The current version was tested with the 2016 Volt.
 So users of 2017, 2018, and 2019 years, please confirm that it is working with your vehicle.
