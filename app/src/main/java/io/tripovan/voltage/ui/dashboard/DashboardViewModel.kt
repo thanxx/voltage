@@ -12,8 +12,7 @@ class DashboardViewModel : ViewModel() {
     private val _cellsSummary = MutableLiveData<String>()
     private val _spread = MutableLiveData<Double>()
     private val _selectedCell = MutableLiveData<String>()
-    val cells: LiveData<ScanResultEntry>
-        get() = _scan
+    val cells: LiveData<ScanResultEntry> get() = _scan
 
     val summary: LiveData<String> get() = _summary
 

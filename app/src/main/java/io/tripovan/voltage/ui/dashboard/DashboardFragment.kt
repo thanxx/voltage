@@ -26,6 +26,7 @@ import io.tripovan.voltage.communication.SocketManager
 import io.tripovan.voltage.communication.obd2.Volt2Obd2Impl
 import io.tripovan.voltage.data.ScanResultEntry
 import io.tripovan.voltage.databinding.FragmentDashboardBinding
+import io.tripovan.voltage.utils.Constants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -229,10 +230,11 @@ class DashboardFragment : Fragment(),
                 dashboardViewModel.updateScan(scan)
                 dashboardViewModel.updateSummary(
                     String.format(
-                        "Date: %s \nOdometer: ~%s\nCapacity: %.3f KWh\nSoC Raw HD: %.1f %%\nSoC Displayed: %.1f %%",
+                        "Date: %s \nOdometer: ~%s\nCapacity: %.3f KWh \\ %.2f%% \nSoC Raw HD: %.1f %%\nSoC Displayed: %.1f %%",
                         Date(scan.timestamp).toString(),
                         odometerText,
                         capacity,
+                        capacity / Constants.volt2InitialCapacity * 100,
                         socRawHd,
                         socDisplayed
                     )
@@ -273,7 +275,7 @@ class DashboardFragment : Fragment(),
 
             dashboardViewModel.updateSelectedCell(
                 String.format(
-                    "Selected cell: #%d, %.3f V\nSection: %s, Group: %s",
+                    "Selected cell: #%d, %.3f V, Section: %s, Group: %s",
                     cellNo + 1, entry.y, section, group
                 )
             )

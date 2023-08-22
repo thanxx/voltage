@@ -75,7 +75,7 @@ class HistoryFragment : Fragment(), OnChartValueSelectedListener {
 
         capacityChart = binding.capacityChart
         capacityChart.xAxis.valueFormatter = DateXAxisFormatter()
-        capacityChart.xAxis.gridColor = textColor
+        capacityChart.xAxis.gridColor = textColor //TODO make more soft
         capacityChart.xAxis.textColor = textColor
         capacityChart.xAxis.axisLineColor = textColor
         capacityChart.legend.textColor = textColor
