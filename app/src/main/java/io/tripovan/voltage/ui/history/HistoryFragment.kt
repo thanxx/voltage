@@ -18,6 +18,9 @@ import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import io.tripovan.voltage.App
 import io.tripovan.voltage.data.DateXAxisFormatter
 import io.tripovan.voltage.databinding.FragmentHistoryBinding
+import io.tripovan.voltage.ui.dashboard.DashboardViewModel
+import io.tripovan.voltage.utils.Constants
+import io.tripovan.voltage.utils.TimestampReducer
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -34,6 +37,7 @@ class HistoryFragment : Fragment(), OnChartValueSelectedListener {
 
     private lateinit var capacityChart: LineChart
     private lateinit var historyViewModel: HistoryViewModel
+    private lateinit var dashboardViewModel: DashboardViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,6 +46,9 @@ class HistoryFragment : Fragment(), OnChartValueSelectedListener {
     ): View {
 
         historyViewModel = ViewModelProvider(this)[HistoryViewModel::class.java]
+
+        dashboardViewModel = ViewModelProvider(this)[DashboardViewModel::class.java]
+
         _binding = FragmentHistoryBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
@@ -91,7 +98,7 @@ class HistoryFragment : Fragment(), OnChartValueSelectedListener {
             it.forEach {
                 capacityTimeSeries.add(
                     Entry(
-                        it.timestamp.toFloat(),
+                        TimestampReducer.longToFloatTs(it.timestamp),
                         it.capacity.toFloat()
                     )
                 )
@@ -118,13 +125,16 @@ class HistoryFragment : Fragment(), OnChartValueSelectedListener {
 
     override fun onValueSelected(e: Entry, h: Highlight?) {
         capacityChart.highlightValue(h)
-        val dateText = Date(e.x.toLong())
-        historyViewModel.updateCapacityText("${e.y} KWh\n$dateText")
+        var longDate = TimestampReducer.floatToLongTs(e.x)
+
+        val date = Date(longDate)
+
+        historyViewModel.updateCapacityText("%.2f KWh\n$date".format(e.y))
+        App.currentTimestamp = longDate
+        dashboardViewModel.clearSelectedCell()
     }
 
-    override fun onNothingSelected() {
-
-    }
+    override fun onNothingSelected() {}
 
     override fun onDestroyView() {
         super.onDestroyView()

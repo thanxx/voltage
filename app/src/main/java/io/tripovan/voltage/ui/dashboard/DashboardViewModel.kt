@@ -12,6 +12,11 @@ class DashboardViewModel : ViewModel() {
     private val _cellsSummary = MutableLiveData<String>()
     private val _spread = MutableLiveData<Double>()
     private val _selectedCell = MutableLiveData<String>()
+
+    init {
+        clearSelectedCell()
+    }
+
     val cells: LiveData<ScanResultEntry> get() = _scan
 
     val summary: LiveData<String> get() = _summary
@@ -21,6 +26,7 @@ class DashboardViewModel : ViewModel() {
     val spread: LiveData<Double> get() = _spread
 
     val selectedCell: LiveData<String> get() = _selectedCell
+
 
     fun updateScan(data: ScanResultEntry) {
         _scan.value = data
@@ -40,5 +46,9 @@ class DashboardViewModel : ViewModel() {
 
     fun updateSelectedCell(cell: String) {
         _selectedCell.value = cell
+    }
+
+    fun clearSelectedCell() {
+        _selectedCell.value = "Select cell value to highlight"
     }
 }

@@ -3,6 +3,7 @@ package io.tripovan.voltage.ui.dashboard
 import android.content.res.Resources
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
@@ -27,6 +28,8 @@ import io.tripovan.voltage.communication.obd2.Volt2Obd2Impl
 import io.tripovan.voltage.data.ScanResultEntry
 import io.tripovan.voltage.databinding.FragmentDashboardBinding
 import io.tripovan.voltage.utils.Constants
+import io.tripovan.voltage.utils.Constants.TAG
+import io.tripovan.voltage.utils.TimestampReducer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -40,6 +43,7 @@ class DashboardFragment : Fragment(),
     private val binding get() = _binding!!
     private var socketManager: SocketManager? = null
     private lateinit var dashboardViewModel: DashboardViewModel
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -57,6 +61,7 @@ class DashboardFragment : Fragment(),
         val cellsSummary: TextView = binding.cellsSummary
         val spreadTextView: TextView = binding.spread
         val selectedCell: TextView = binding.selectedCell
+
 
         dashboardViewModel.summary.observe(viewLifecycleOwner) {
             textView.text = it
@@ -77,6 +82,7 @@ class DashboardFragment : Fragment(),
         dashboardViewModel.selectedCell.observe(viewLifecycleOwner) {
             selectedCell.text = it
         }
+
 
         val sharedPref = App.instance.getSharedPrefs()
         val adapterAddress = sharedPref?.getString("adapter_address", null)
@@ -102,7 +108,7 @@ class DashboardFragment : Fragment(),
         if (socketManager == null) {
             button.isEnabled = false
         } else {
-            button.text = "Scan"
+            button.text = "Read"
 
 
             button.setOnClickListener {
@@ -137,6 +143,7 @@ class DashboardFragment : Fragment(),
 
                     if (scan != null) {
                         App.database.scanResultDao().insert(scan)
+                        App.currentTimestamp = null
                     }
                 }
             }
@@ -184,29 +191,6 @@ class DashboardFragment : Fragment(),
 
             barChart.invalidate()
         }
-
-        GlobalScope.launch {
-
-            var scan: ScanResultEntry? = null
-            try {
-                val results = App.database.scanResultDao().getAllScanResults()
-                if (results.isNotEmpty()) {
-                    scan = App.database.scanResultDao().getAllScanResults().last()
-                }
-
-            } catch (e: Exception) {
-                e.message?.let { it1 -> App.instance.showToast(it1) }
-            }
-
-            if (scan != null) {
-                withContext(Dispatchers.Main) {
-                    updateUI(scan)
-                }
-            }
-        }
-
-
-
         return root
     }
 
@@ -264,7 +248,7 @@ class DashboardFragment : Fragment(),
             var group = 1
 
             val section = when {
-                cellNo > 84 -> 3.also { group = 7}
+                cellNo > 84 -> 3.also { group = 7 }
                 cellNo > 72 -> 3.also { group = 6 }
                 cellNo > 56 -> 2.also { group = 5 }
                 cellNo > 44 -> 2.also { group = 4 }
@@ -275,7 +259,7 @@ class DashboardFragment : Fragment(),
 
             dashboardViewModel.updateSelectedCell(
                 String.format(
-                    "Selected cell: #%d, %.3f V, Section: %s, Group: %s",
+                    "Selected cell: #%d, %.3fV, Section: %s, Group: %s",
                     cellNo + 1, entry.y, section, group
                 )
             )
@@ -284,6 +268,44 @@ class DashboardFragment : Fragment(),
 
     override fun onNothingSelected() {
         dashboardViewModel.updateSelectedCell(" ")
+    }
+
+
+    override fun onResume() {
+        super.onResume()
+        Log.i(TAG, "onResume")
+    }
+    override fun onStart() {
+        super.onStart()
+        Log.i(TAG, "onStart")
+
+        GlobalScope.launch {
+
+            var scan: ScanResultEntry? = null
+            try {
+                if (App.currentTimestamp != null) {
+
+                    val list = App.database.scanResultDao().getAllScanResults()
+                    Log.i("", list[list.lastIndex].timestamp.toString())
+                    scan = list.find { TimestampReducer.reduceMillisToSeconds(it.timestamp) == App.currentTimestamp}
+                    //scan = App.database.scanResultDao().getScanResultByTimestamp(1690222124048)
+                } else {
+
+                    val results = App.database.scanResultDao().getAllScanResults()
+                    if (results.isNotEmpty()) {
+                        scan = App.database.scanResultDao().getAllScanResults().last()
+                    }
+                }
+            } catch (e: Exception) {
+                e.message?.let { it1 -> App.instance.showToast(it1) }
+            }
+
+            if (scan != null) {
+                withContext(Dispatchers.Main) {
+                    updateUI(scan)
+                }
+            }
+        }
     }
 
 
