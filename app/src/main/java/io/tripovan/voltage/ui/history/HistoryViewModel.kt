@@ -12,7 +12,7 @@ class HistoryViewModel : ViewModel() {
         value = "Tap on chart to highlight value"
     }
 
-    fun updateCapacityText(text: String) {
+    fun updateText(text: String) {
         _text.value = text
     }
     val text: LiveData<String> = _text

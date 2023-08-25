@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.github.mikephil.charting.charts.LineChart
@@ -19,7 +20,6 @@ import io.tripovan.voltage.App
 import io.tripovan.voltage.data.DateXAxisFormatter
 import io.tripovan.voltage.databinding.FragmentHistoryBinding
 import io.tripovan.voltage.ui.dashboard.DashboardViewModel
-import io.tripovan.voltage.utils.Constants
 import io.tripovan.voltage.utils.TimestampReducer
 
 import kotlinx.coroutines.Dispatchers
@@ -35,7 +35,7 @@ class HistoryFragment : Fragment(), OnChartValueSelectedListener {
 
     private val binding get() = _binding!!
 
-    private lateinit var capacityChart: LineChart
+    private lateinit var historyChart: LineChart
     private lateinit var historyViewModel: HistoryViewModel
     private lateinit var dashboardViewModel: DashboardViewModel
 
@@ -54,7 +54,7 @@ class HistoryFragment : Fragment(), OnChartValueSelectedListener {
 
         val textView: TextView = binding.textHistory
         historyViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = "Capacity: $it"
+            textView.text = it
         }
 
         val typedValue = TypedValue()
@@ -79,19 +79,21 @@ class HistoryFragment : Fragment(), OnChartValueSelectedListener {
         val textColor = typedValue.data
         theme.resolveAttribute(androidx.transition.R.attr.colorPrimary, typedValue, true)
         val lineColor = typedValue.data
-
-        capacityChart = binding.capacityChart
-        capacityChart.xAxis.valueFormatter = DateXAxisFormatter()
-        capacityChart.xAxis.gridColor = textColor //TODO make more soft
-        capacityChart.xAxis.textColor = textColor
-        capacityChart.xAxis.axisLineColor = textColor
-        capacityChart.legend.textColor = textColor
-        capacityChart.axisLeft.textColor = textColor
-        capacityChart.axisLeft.axisLineColor = textColor
-        capacityChart.axisRight.axisLineColor = textColor
-        capacityChart.axisRight.textColor = textColor
-        capacityChart.setDrawMarkers(true)
-        capacityChart.setOnChartValueSelectedListener(this)
+        val gridcolor = ContextCompat.getColor(requireContext(), com.google.android.material.R.color.material_grey_600);
+        historyChart = binding.capacityChart
+        historyChart.xAxis.valueFormatter = DateXAxisFormatter()
+        historyChart.xAxis.gridColor = gridcolor
+        historyChart.axisRight.gridColor = gridcolor
+        historyChart.axisLeft.gridColor = gridcolor
+        historyChart.xAxis.textColor = textColor
+        historyChart.xAxis.axisLineColor = textColor
+        historyChart.legend.textColor = textColor
+        historyChart.axisLeft.textColor = textColor
+        historyChart.axisLeft.axisLineColor = textColor
+        historyChart.axisRight.axisLineColor = textColor
+        historyChart.axisRight.textColor = textColor
+        historyChart.setDrawMarkers(true)
+        historyChart.setOnChartValueSelectedListener(this)
 
         historyViewModel.historyData.observe(viewLifecycleOwner){ it ->
             var capacityTimeSeries = ArrayList<Entry>()
@@ -110,8 +112,9 @@ class HistoryFragment : Fragment(), OnChartValueSelectedListener {
                 val lineData = LineData()
                 lineData.addDataSet(lineDataSet)
                 lineData.setValueTextColor(textColor)
-                capacityChart.data = lineData
-                capacityChart.invalidate()
+                historyChart.data = lineData
+                historyChart.description.text = ""
+                historyChart.invalidate()
             }
         }
         return root
@@ -119,10 +122,10 @@ class HistoryFragment : Fragment(), OnChartValueSelectedListener {
 
 
     override fun onValueSelected(e: Entry, h: Highlight?) {
-        capacityChart.highlightValue(h)
+        historyChart.highlightValue(h)
         var longDate = TimestampReducer.floatToLongTs(e.x)
         val date = Date(longDate)
-        historyViewModel.updateCapacityText("%.2f KWh\n$date".format(e.y))
+        historyViewModel.updateText("$date\nCapacity: %.2f KWh".format(e.y))
         App.currentTimestamp = longDate
         dashboardViewModel.clearSelectedCell()
     }

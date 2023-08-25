@@ -271,14 +271,8 @@ class DashboardFragment : Fragment(),
         dashboardViewModel.clearSelectedCell()
     }
 
-
-    override fun onResume() {
-        super.onResume()
-        Log.i(TAG, "onResume")
-    }
     override fun onStart() {
         super.onStart()
-        Log.i(TAG, "onStart")
         dashboardViewModel.clearSelectedCell()
 
         GlobalScope.launch {
