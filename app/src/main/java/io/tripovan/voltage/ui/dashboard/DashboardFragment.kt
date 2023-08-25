@@ -98,7 +98,7 @@ class DashboardFragment : Fragment(),
         }
 
         if (adapterAddress == null) {
-            button.text = "Select OBD2 adapter"
+            button.text = "Select OBD2 adapter in Settings"
             button.setOnClickListener {
                 val navView: BottomNavigationView =
                     requireActivity().findViewById(R.id.nav_view)
@@ -215,7 +215,7 @@ class DashboardFragment : Fragment(),
                 dashboardViewModel.updateScan(scan)
                 dashboardViewModel.updateSummary(
                     String.format(
-                        "Date: %s \nOdometer: ~%s\nCapacity: %.3f KWh \\ %.2f%% \nSoC Raw HD: %.1f %%\nSoC Displayed: %.1f %%",
+                        "Date: %s \nOdometer: ~%s\nCapacity: %.3f KWh / %.2f%% \nSoC Raw HD: %.1f %%\nSoC Displayed: %.1f %%",
                         Date(scan.timestamp).toString(),
                         odometerText,
                         capacity,
@@ -284,9 +284,11 @@ class DashboardFragment : Fragment(),
                     val list = App.database.scanResultDao().getAllScanResults()
                     Log.i("", list[list.lastIndex].timestamp.toString())
 
-                    scan = list.find { TimestampReducer.reduce(it.timestamp) == App.currentTimestamp}
+                    scan =
+                        list.find { TimestampReducer.reduce(it.timestamp) == App.currentTimestamp }
                     if (scan == null) {
-                        scan = list.find { TimestampReducer.reduce(it.timestamp) == (App.currentTimestamp!! + 1000) } // Search the next second due to MPAndroidChart inaccuracy }
+                        scan =
+                            list.find { TimestampReducer.reduce(it.timestamp) == (App.currentTimestamp!! + 1000) } // Search the next second due to MPAndroidChart inaccuracy }
                     }
                 } else {
 
@@ -298,10 +300,12 @@ class DashboardFragment : Fragment(),
             } catch (e: Exception) {
                 e.message?.let { it1 -> App.instance.showToast(it1) }
             }
+            withContext(Dispatchers.Main) {
+                if (scan != null) {
 
-            if (scan != null) {
-                withContext(Dispatchers.Main) {
                     updateUI(scan)
+                } else {
+                    dashboardViewModel.updateSelectedCell("")
                 }
             }
         }

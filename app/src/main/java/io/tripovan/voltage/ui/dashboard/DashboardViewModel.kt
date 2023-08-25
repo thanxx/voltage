@@ -45,7 +45,7 @@ class DashboardViewModel : ViewModel() {
     }
 
     fun updateSelectedCell(cell: String) {
-        _selectedCell.value = cell
+        _selectedCell.postValue(cell)
     }
 
     fun clearSelectedCell() {
