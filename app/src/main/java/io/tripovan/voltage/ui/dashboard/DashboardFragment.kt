@@ -268,7 +268,7 @@ class DashboardFragment : Fragment(),
     }
 
     override fun onNothingSelected() {
-        dashboardViewModel.updateSelectedCell(" ")
+        dashboardViewModel.clearSelectedCell()
     }
 
 
@@ -279,6 +279,7 @@ class DashboardFragment : Fragment(),
     override fun onStart() {
         super.onStart()
         Log.i(TAG, "onStart")
+        dashboardViewModel.clearSelectedCell()
 
         GlobalScope.launch {
 
