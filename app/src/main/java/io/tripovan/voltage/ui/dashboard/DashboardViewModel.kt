@@ -49,6 +49,6 @@ class DashboardViewModel : ViewModel() {
     }
 
     fun clearSelectedCell() {
-        _selectedCell.value = "Select cell value to highlight"
+        _selectedCell.value = "Select cell to highlight"
     }
 }
