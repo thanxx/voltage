@@ -188,6 +188,7 @@ class DashboardFragment : Fragment(),
             barChart.legend.isEnabled = false
             barChart.setMaxVisibleValueCount(1)
             barChart.setOnChartValueSelectedListener(this)
+            barChart.setPinchZoom(false)
 
             barChart.invalidate()
         }
@@ -287,8 +288,11 @@ class DashboardFragment : Fragment(),
 
                     val list = App.database.scanResultDao().getAllScanResults()
                     Log.i("", list[list.lastIndex].timestamp.toString())
-                    scan = list.find { TimestampReducer.reduceMillisToSeconds(it.timestamp) == App.currentTimestamp}
-                    //scan = App.database.scanResultDao().getScanResultByTimestamp(1690222124048)
+
+                    scan = list.find { TimestampReducer.reduce(it.timestamp) == App.currentTimestamp}
+                    if (scan == null) {
+                        scan = list.find { TimestampReducer.reduce(it.timestamp) == (App.currentTimestamp!! + 1000) } // Search the next second due to MPAndroidChart inaccuracy }
+                    }
                 } else {
 
                     val results = App.database.scanResultDao().getAllScanResults()

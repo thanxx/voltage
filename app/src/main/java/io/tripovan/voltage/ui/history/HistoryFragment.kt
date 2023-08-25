@@ -111,14 +111,9 @@ class HistoryFragment : Fragment(), OnChartValueSelectedListener {
                 lineData.addDataSet(lineDataSet)
                 lineData.setValueTextColor(textColor)
                 capacityChart.data = lineData
-
-
                 capacityChart.invalidate()
-
             }
         }
-
-
         return root
     }
 
@@ -126,9 +121,7 @@ class HistoryFragment : Fragment(), OnChartValueSelectedListener {
     override fun onValueSelected(e: Entry, h: Highlight?) {
         capacityChart.highlightValue(h)
         var longDate = TimestampReducer.floatToLongTs(e.x)
-
         val date = Date(longDate)
-
         historyViewModel.updateCapacityText("%.2f KWh\n$date".format(e.y))
         App.currentTimestamp = longDate
         dashboardViewModel.clearSelectedCell()
