@@ -7,21 +7,26 @@ import io.tripovan.voltage.data.ScanResultEntry
 
 class HistoryViewModel : ViewModel() {
 
+
     private val _text = MutableLiveData<String>().apply {
         value = "Tap on chart to highlight value"
+    }
+
+    fun updateText(text: String) {
+        _text.value = text
     }
     val text: LiveData<String> = _text
 
     private var _historyData = MutableLiveData<List<ScanResultEntry>>().apply {
         value = ArrayList<ScanResultEntry>()
     }
+
     var historyData: LiveData<List<ScanResultEntry>> = _historyData
+
+
 
     fun updateHistory(history: List<ScanResultEntry>){
         _historyData.value = history
     }
 
-    fun updateCapacityText(text: String) {
-        _text.value = text
-    }
 }
