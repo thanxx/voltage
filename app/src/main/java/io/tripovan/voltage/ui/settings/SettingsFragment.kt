@@ -112,7 +112,7 @@ class SettingsFragment : Fragment() {
     private fun showFirstRunAlertDialog() {
         val alertDialogBuilder = AlertDialog.Builder(requireContext())
         alertDialogBuilder.setTitle("Welcome!")
-        alertDialogBuilder.setMessage("This app was tested with 2016 Volt. If you experience errors, please send logs, open an issue on GitHub (in Settings). Also, this app is open source, so you are welcome to make a pull request or provide feedback")
+        alertDialogBuilder.setMessage("This app was tested with the 2016 Volt. If you experience errors, please send logs, open an issue on GitHub (in Settings). Also, this app is open source, so you are welcome to make a pull request or provide feedback")
         alertDialogBuilder.setPositiveButton("OK") { _, _ ->
             var editor = App.instance.getSharedPrefs()?.edit()
             editor?.putBoolean("firstRun", false)

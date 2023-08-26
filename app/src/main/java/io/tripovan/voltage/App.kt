@@ -17,6 +17,8 @@ import kotlinx.coroutines.withContext
 
 class App : Application() {
     companion object {
+
+        var currentTimestamp: Long? = null
         lateinit var instance: App
             private set
         var socketManager: SocketManager? = null

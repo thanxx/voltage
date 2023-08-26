@@ -21,7 +21,6 @@ class MailUtils {
         val attachment = File(App.instance.filesDir, "log.txt")
         Log.i(Constants.TAG, "Sending log, size=${attachment.length()}")
         val fileUri: Uri = FileProvider.getUriForFile(App.instance, "com.yourapp.provider", attachment)
-
         emailIntent.putExtra(Intent.EXTRA_STREAM, fileUri)
         emailIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         if (emailIntent.resolveActivity(App.instance.packageManager) != null) App.instance.startActivity(

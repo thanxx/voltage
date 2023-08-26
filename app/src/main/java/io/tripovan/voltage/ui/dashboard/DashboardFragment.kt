@@ -3,6 +3,7 @@ package io.tripovan.voltage.ui.dashboard
 import android.content.res.Resources
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
@@ -26,6 +27,9 @@ import io.tripovan.voltage.communication.SocketManager
 import io.tripovan.voltage.communication.obd2.Volt2Obd2Impl
 import io.tripovan.voltage.data.ScanResultEntry
 import io.tripovan.voltage.databinding.FragmentDashboardBinding
+import io.tripovan.voltage.utils.Constants
+import io.tripovan.voltage.utils.Constants.TAG
+import io.tripovan.voltage.utils.TimestampReducer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -39,6 +43,7 @@ class DashboardFragment : Fragment(),
     private val binding get() = _binding!!
     private var socketManager: SocketManager? = null
     private lateinit var dashboardViewModel: DashboardViewModel
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -56,6 +61,7 @@ class DashboardFragment : Fragment(),
         val cellsSummary: TextView = binding.cellsSummary
         val spreadTextView: TextView = binding.spread
         val selectedCell: TextView = binding.selectedCell
+
 
         dashboardViewModel.summary.observe(viewLifecycleOwner) {
             textView.text = it
@@ -77,6 +83,7 @@ class DashboardFragment : Fragment(),
             selectedCell.text = it
         }
 
+
         val sharedPref = App.instance.getSharedPrefs()
         val adapterAddress = sharedPref?.getString("adapter_address", null)
 
@@ -91,7 +98,7 @@ class DashboardFragment : Fragment(),
         }
 
         if (adapterAddress == null) {
-            button.text = "Select OBD2 adapter"
+            button.text = "Select OBD2 adapter in Settings"
             button.setOnClickListener {
                 val navView: BottomNavigationView =
                     requireActivity().findViewById(R.id.nav_view)
@@ -101,7 +108,7 @@ class DashboardFragment : Fragment(),
         if (socketManager == null) {
             button.isEnabled = false
         } else {
-            button.text = "Scan"
+            button.text = "Read"
 
 
             button.setOnClickListener {
@@ -136,6 +143,7 @@ class DashboardFragment : Fragment(),
 
                     if (scan != null) {
                         App.database.scanResultDao().insert(scan)
+                        App.currentTimestamp = null
                     }
                 }
             }
@@ -180,32 +188,10 @@ class DashboardFragment : Fragment(),
             barChart.legend.isEnabled = false
             barChart.setMaxVisibleValueCount(1)
             barChart.setOnChartValueSelectedListener(this)
+            barChart.setPinchZoom(false)
 
             barChart.invalidate()
         }
-
-        GlobalScope.launch {
-
-            var scan: ScanResultEntry? = null
-            try {
-                val results = App.database.scanResultDao().getAllScanResults()
-                if (results.isNotEmpty()) {
-                    scan = App.database.scanResultDao().getAllScanResults().last()
-                }
-
-            } catch (e: Exception) {
-                e.message?.let { it1 -> App.instance.showToast(it1) }
-            }
-
-            if (scan != null) {
-                withContext(Dispatchers.Main) {
-                    updateUI(scan)
-                }
-            }
-        }
-
-
-
         return root
     }
 
@@ -229,10 +215,11 @@ class DashboardFragment : Fragment(),
                 dashboardViewModel.updateScan(scan)
                 dashboardViewModel.updateSummary(
                     String.format(
-                        "Date: %s \nOdometer: ~%s\nCapacity: %.3f KWh\nSoC Raw HD: %.1f %%\nSoC Displayed: %.1f %%",
+                        "Date: %s \nOdometer: ~%s\nCapacity: %.3f KWh / %.2f%% \nSoC Raw HD: %.1f %%\nSoC Displayed: %.1f %%",
                         Date(scan.timestamp).toString(),
                         odometerText,
                         capacity,
+                        capacity / Constants.volt2InitialCapacity * 100,
                         socRawHd,
                         socDisplayed
                     )
@@ -262,7 +249,7 @@ class DashboardFragment : Fragment(),
             var group = 1
 
             val section = when {
-                cellNo > 84 -> 3.also { group = 7}
+                cellNo > 84 -> 3.also { group = 7 }
                 cellNo > 72 -> 3.also { group = 6 }
                 cellNo > 56 -> 2.also { group = 5 }
                 cellNo > 44 -> 2.also { group = 4 }
@@ -273,7 +260,7 @@ class DashboardFragment : Fragment(),
 
             dashboardViewModel.updateSelectedCell(
                 String.format(
-                    "Selected cell: #%d, %.3f V\nSection: %s, Group: %s",
+                    "Selected cell: #%d, %.3fV, Section: %s, Group: %s",
                     cellNo + 1, entry.y, section, group
                 )
             )
@@ -281,7 +268,47 @@ class DashboardFragment : Fragment(),
     }
 
     override fun onNothingSelected() {
-        dashboardViewModel.updateSelectedCell(" ")
+        dashboardViewModel.clearSelectedCell()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        dashboardViewModel.clearSelectedCell()
+
+        GlobalScope.launch {
+
+            var scan: ScanResultEntry? = null
+            try {
+                if (App.currentTimestamp != null) {
+
+                    val list = App.database.scanResultDao().getAllScanResults()
+                    Log.i("", list[list.lastIndex].timestamp.toString())
+
+                    scan =
+                        list.find { TimestampReducer.reduce(it.timestamp) == App.currentTimestamp }
+                    if (scan == null) {
+                        scan =
+                            list.find { TimestampReducer.reduce(it.timestamp) == (App.currentTimestamp!! + 1000) } // Search the next second due to MPAndroidChart inaccuracy }
+                    }
+                } else {
+
+                    val results = App.database.scanResultDao().getAllScanResults()
+                    if (results.isNotEmpty()) {
+                        scan = App.database.scanResultDao().getAllScanResults().last()
+                    }
+                }
+            } catch (e: Exception) {
+                e.message?.let { it1 -> App.instance.showToast(it1) }
+            }
+            withContext(Dispatchers.Main) {
+                if (scan != null) {
+
+                    updateUI(scan)
+                } else {
+                    dashboardViewModel.updateSelectedCell("")
+                }
+            }
+        }
     }
 
 
