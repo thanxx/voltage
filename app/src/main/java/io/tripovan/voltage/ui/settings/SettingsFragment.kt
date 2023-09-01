@@ -1,8 +1,14 @@
 package io.tripovan.voltage.ui.settings
 
+import android.Manifest
 import android.app.AlertDialog
+import android.bluetooth.BluetoothDevice
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.text.util.Linkify
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,6 +16,9 @@ import android.widget.AdapterView
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,15 +28,16 @@ import io.tripovan.voltage.R
 import io.tripovan.voltage.communication.SocketManager
 import io.tripovan.voltage.databinding.FragmentSettingsBinding
 import io.tripovan.voltage.ui.settings.devices_list.DevicesAdapter
+import io.tripovan.voltage.utils.Constants
 import io.tripovan.voltage.utils.LoggingUtils
 import io.tripovan.voltage.utils.MailUtils
 
 
-class SettingsFragment : Fragment() {
+class SettingsFragment : Fragment(), ActivityCompat.OnRequestPermissionsResultCallback {
     private lateinit var devicesView: RecyclerView
     private lateinit var distanceUnitsSpinner: Spinner
     private lateinit var adapter: DevicesAdapter
-    private lateinit var settingsViewModel : SettingsViewModel
+    private lateinit var settingsViewModel: SettingsViewModel
     private var _binding: FragmentSettingsBinding? = null
     private val binding get() = _binding!!
 
@@ -40,17 +50,9 @@ class SettingsFragment : Fragment() {
         val sharedPref = App.instance.getSharedPrefs()
 
         _binding = FragmentSettingsBinding.inflate(inflater, container, false)
-        val textView: TextView = binding.selectedDevice
         val root: View = binding.root
 
 
-        var btDevices = SocketManager.getPairedDevices()
-        settingsViewModel.updateDevicesList(btDevices)
-        if (btDevices.isEmpty()) {
-            textView.text = "Make sure you have paired your OBD2 adapter and/or turned on Bluetooth"
-        } else {
-            textView.text = "Select OBD2 adapter"
-        }
 
         distanceUnitsSpinner = binding.distanceUnits
         devicesView = binding.devices
@@ -64,7 +66,9 @@ class SettingsFragment : Fragment() {
 
         settingsViewModel.text.observe(viewLifecycleOwner) {
             adapter.notifyDataSetChanged()
+            binding.selectedDevice.text = it
         }
+
 
         val appInfo = binding.appInfo
         appInfo.text = App.appVersion + "\nhttps://github.com/thanxx/voltage"
@@ -131,9 +135,76 @@ class SettingsFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        Log.i("", "onResume")
 
-        var btDevices = SocketManager.getPairedDevices()
-        settingsViewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
-        settingsViewModel.updateDevicesList(btDevices)
+        val textView: TextView = binding.selectedDevice
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.BLUETOOTH
+                ) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                updateDevices()
+                textView.isClickable = false
+            } else {
+                val textView: TextView = binding.selectedDevice
+                textView.isClickable = true
+                settingsViewModel.updateText("In order to select an OBD2 adapter, you need to grant permissions. Click here to request them")
+                textView.setOnClickListener {
+                    Log.i(Constants.TAG, "Request permissions clicked")
+                    requestPermissions()
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(
+                            requireActivity(),
+                            Manifest.permission.BLUETOOTH_CONNECT)) {
+                        settingsViewModel.updateText("This app needs permission for scanning nearby devices over Bluetooth, if you reject, the app will not be able read data from your vehicle")
+                    } else {
+                        settingsViewModel.updateText("Permission for scanning nearby devices is disabled. You can enable it in the Android settings for this app")
+                    }
+                }
+            }
+        } else {
+            updateDevices()
+        }
     }
+
+    private fun updateDevices() {
+
+        val btDevices = SocketManager.getPairedDevices()
+        settingsViewModel.updateDevicesList(btDevices)
+        if (btDevices.isEmpty()) {
+            settingsViewModel.updateText("No paired devices")
+        } else {
+            settingsViewModel.updateText("Select OBD2 adapter")
+        }
+    }
+
+
+    private fun requestPermissions() {
+
+        var permissionsToRequire: ArrayList<String> = ArrayList()
+        arrayOf(
+            Manifest.permission.BLUETOOTH,
+            Manifest.permission.BLUETOOTH_CONNECT
+        ).forEach {
+            if ((ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    it
+                ) == PackageManager.PERMISSION_DENIED)
+            ) {
+                permissionsToRequire.add(it)
+            }
+        }
+
+        val permissionsArray = permissionsToRequire.toTypedArray()
+        ActivityCompat.requestPermissions(requireActivity(), permissionsArray, 1)
+
+    }
+
+
 }
