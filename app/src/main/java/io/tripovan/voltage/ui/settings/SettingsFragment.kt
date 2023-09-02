@@ -2,8 +2,6 @@ package io.tripovan.voltage.ui.settings
 
 import android.Manifest
 import android.app.AlertDialog
-import android.bluetooth.BluetoothDevice
-import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -16,7 +14,6 @@ import android.widget.AdapterView
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -66,7 +63,6 @@ class SettingsFragment : Fragment(), ActivityCompat.OnRequestPermissionsResultCa
 
         settingsViewModel.text.observe(viewLifecycleOwner) {
             adapter.notifyDataSetChanged()
-            binding.selectedDevice.text = it
         }
 
 
@@ -137,34 +133,30 @@ class SettingsFragment : Fragment(), ActivityCompat.OnRequestPermissionsResultCa
         super.onResume()
         Log.i("", "onResume")
 
-        val textView: TextView = binding.selectedDevice
+        val textView: TextView = binding.textView
 
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (ContextCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.BLUETOOTH
-                ) == PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.BLUETOOTH_CONNECT
-                ) == PackageManager.PERMISSION_GRANTED
+            if (App.instance.isBtPermissionEnabled()
             ) {
                 updateDevices()
                 textView.isClickable = false
             } else {
-                val textView: TextView = binding.selectedDevice
+                val textView: TextView = binding.textView
                 textView.isClickable = true
-                settingsViewModel.updateText("In order to select an OBD2 adapter, you need to grant permissions. Click here to request them")
+                binding.textView.text =
+                    "In order to select an OBD2 adapter, you need to grant permissions. Click here to request them"
                 textView.setOnClickListener {
                     Log.i(Constants.TAG, "Request permissions clicked")
                     requestPermissions()
                     if (ActivityCompat.shouldShowRequestPermissionRationale(
                             requireActivity(),
-                            Manifest.permission.BLUETOOTH_CONNECT)) {
-                        settingsViewModel.updateText("This app needs permission for scanning nearby devices over Bluetooth, if you reject, the app will not be able read data from your vehicle")
+                            Manifest.permission.BLUETOOTH_CONNECT
+                        )
+                    ) {
+                        binding.textView.text = "This app needs permission for scanning nearby devices over Bluetooth, if you reject, the app will not be able read data from your vehicle"
                     } else {
-                        settingsViewModel.updateText("Permission for scanning nearby devices is disabled. You can enable it in the Android settings for this app")
+                        binding.textView.text = "Permission for scanning nearby devices is disabled. You can enable it in the Android settings for this app"
                     }
                 }
             }
@@ -174,13 +166,12 @@ class SettingsFragment : Fragment(), ActivityCompat.OnRequestPermissionsResultCa
     }
 
     private fun updateDevices() {
-
         val btDevices = SocketManager.getPairedDevices()
         settingsViewModel.updateDevicesList(btDevices)
         if (btDevices.isEmpty()) {
-            settingsViewModel.updateText("No paired devices")
+            binding.textView.text = "No paired devices"
         } else {
-            settingsViewModel.updateText("Select OBD2 adapter")
+            binding.textView.text = "Select OBD2 adapter"
         }
     }
 

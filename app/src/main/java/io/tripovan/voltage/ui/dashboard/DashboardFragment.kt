@@ -22,6 +22,7 @@ import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import io.tripovan.voltage.App
+import io.tripovan.voltage.App.Companion.socketManager
 import io.tripovan.voltage.R
 import io.tripovan.voltage.communication.SocketManager
 import io.tripovan.voltage.communication.obd2.Volt2Obd2Impl
@@ -84,70 +85,7 @@ class DashboardFragment : Fragment(),
         }
 
 
-        val sharedPref = App.instance.getSharedPrefs()
-        val adapterAddress = sharedPref?.getString("adapter_address", null)
 
-        val button = binding.scan
-        try {
-            val bluetoothManager = App.instance.getBluetoothManager()
-            if (bluetoothManager != null) {
-                socketManager = App.instance.getBluetoothManager()
-            }
-        } catch (e: Exception) {
-            Toast.makeText(App.instance.applicationContext, e.message, Toast.LENGTH_SHORT).show()
-        }
-
-        if (adapterAddress == null) {
-            button.text = "Select OBD2 adapter in Settings"
-            button.setOnClickListener {
-                val navView: BottomNavigationView =
-                    requireActivity().findViewById(R.id.nav_view)
-                navView.selectedItemId = R.id.navigation_settings
-            }
-        }
-        if (socketManager == null) {
-            button.isEnabled = false
-        } else {
-            button.text = "Read"
-
-
-            button.setOnClickListener {
-                val spinner = activity?.findViewById<View>(R.id.loadingPanel) as? ProgressBar
-
-                GlobalScope.launch {
-
-                    var scan: ScanResultEntry? = null
-                    var retryCount = 3
-                    while (retryCount > 0) {
-                        withContext(Dispatchers.Main) {
-                            spinner?.visibility = View.VISIBLE
-                        }
-                        try {
-                            // todo select vehicle implementation depending on app settings
-                            scan = Volt2Obd2Impl().scan()
-
-                            if (scan.odometer > 0) {
-                                retryCount = 0
-                            }
-
-                        } catch (e: Exception) {
-                            e.message?.let { it1 -> App.instance.showToast(it1) }
-                            retryCount--
-                        }
-
-                        withContext(Dispatchers.Main) {
-                            updateUI(scan)
-                            spinner?.visibility = View.GONE
-                        }
-                    }
-
-                    if (scan != null) {
-                        App.database.scanResultDao().insert(scan)
-                        App.currentTimestamp = null
-                    }
-                }
-            }
-        }
 
         val typedValue = TypedValue()
         val theme: Resources.Theme = requireContext().theme
@@ -311,5 +249,68 @@ class DashboardFragment : Fragment(),
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        val sharedPref = App.instance.getSharedPrefs()
+        val adapterAddress = sharedPref?.getString("adapter_address", null)
 
+        val button = binding.scan
+        try {
+            socketManager = App.instance.getBluetoothManager()
+        } catch (e: Exception) {
+            Toast.makeText(App.instance.applicationContext, e.message, Toast.LENGTH_SHORT).show()
+        }
+
+        if (adapterAddress == null) {
+            button.text = "Select OBD2 adapter in Settings"
+            button.setOnClickListener {
+                val navView: BottomNavigationView =
+                    requireActivity().findViewById(R.id.nav_view)
+                navView.selectedItemId = R.id.navigation_settings
+            }
+        }
+        if (socketManager?.bluetoothSocket == null || !App.instance.isBtPermissionEnabled()) {
+            button.isEnabled = false
+        } else {
+            button.text = "Read"
+
+
+            button.setOnClickListener {
+                val spinner = activity?.findViewById<View>(R.id.loadingPanel) as? ProgressBar
+
+                GlobalScope.launch {
+
+                    var scan: ScanResultEntry? = null
+                    var retryCount = 3
+                    while (retryCount > 0) {
+                        withContext(Dispatchers.Main) {
+                            spinner?.visibility = View.VISIBLE
+                        }
+                        try {
+                            // todo select vehicle implementation depending on app settings
+                            scan = Volt2Obd2Impl().scan()
+
+                            if (scan.odometer > 0) {
+                                retryCount = 0
+                            }
+
+                        } catch (e: Exception) {
+                            e.message?.let { it1 -> App.instance.showToast(it1) }
+                            retryCount--
+                        }
+
+                        withContext(Dispatchers.Main) {
+                            updateUI(scan)
+                            spinner?.visibility = View.GONE
+                        }
+                    }
+
+                    if (scan != null) {
+                        App.database.scanResultDao().insert(scan)
+                        App.currentTimestamp = null
+                    }
+                }
+            }
+        }
+    }
 }

@@ -13,9 +13,9 @@
 
         android:layout_margin="20sp"
 
-        app:layout_constraintTop_toBottomOf="@id/selected_device"/>
+        app:layout_constraintTop_toBottomOf="@id/text_view"/>
     <TextView
-        android:id="@+id/selected_device"
+        android:id="@+id/text_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="15dp"

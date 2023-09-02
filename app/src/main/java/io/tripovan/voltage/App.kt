@@ -1,11 +1,14 @@
 package io.tripovan.voltage
 
+import android.Manifest
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.room.Room
 import io.tripovan.voltage.communication.SocketManager
 import io.tripovan.voltage.data.AppDatabase
@@ -33,16 +36,7 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
-        val sharedPref = getSharedPrefs()
-        val adapterAddress = sharedPref?.getString("adapter_address", null)
-        if (adapterAddress != null) {
-            try {
-                instance.initBluetooth(adapterAddress)
-            } catch (e: Exception) {
-                GlobalScope.launch { e.message?.let { showToast(it) } }
 
-            }
-        }
         database = Room.databaseBuilder(
             applicationContext, AppDatabase::class.java, "voltageDB1"
         ).build()
@@ -71,6 +65,15 @@ class App : Application() {
     }
 
     fun getBluetoothManager(): SocketManager? {
+        val sharedPref = getSharedPrefs()
+        val adapterAddress = sharedPref?.getString("adapter_address", null)
+        if (adapterAddress != null) {
+            try {
+                instance.initBluetooth(adapterAddress)
+            } catch (e: Exception) {
+                GlobalScope.launch { e.message?.let { showToast(it) } }
+            }
+        }
         return socketManager
     }
 
@@ -82,5 +85,16 @@ class App : Application() {
 
     fun getSharedPrefs() : SharedPreferences? {
         return this.getSharedPreferences("voltage_settings", Context.MODE_PRIVATE)
+    }
+
+    fun isBtPermissionEnabled():Boolean {
+        return ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.BLUETOOTH
+            ) == PackageManager.PERMISSION_GRANTED
+            && ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) == PackageManager.PERMISSION_GRANTED
     }
 }
