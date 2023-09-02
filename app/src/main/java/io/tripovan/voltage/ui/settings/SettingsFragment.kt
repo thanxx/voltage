@@ -30,7 +30,7 @@ import io.tripovan.voltage.utils.LoggingUtils
 import io.tripovan.voltage.utils.MailUtils
 
 
-class SettingsFragment : Fragment(), ActivityCompat.OnRequestPermissionsResultCallback {
+class SettingsFragment : Fragment() {
     private lateinit var devicesView: RecyclerView
     private lateinit var distanceUnitsSpinner: Spinner
     private lateinit var adapter: DevicesAdapter

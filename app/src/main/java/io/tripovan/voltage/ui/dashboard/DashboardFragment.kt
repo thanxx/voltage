@@ -22,14 +22,12 @@ import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import io.tripovan.voltage.App
-import io.tripovan.voltage.App.Companion.socketManager
 import io.tripovan.voltage.R
 import io.tripovan.voltage.communication.SocketManager
 import io.tripovan.voltage.communication.obd2.Volt2Obd2Impl
 import io.tripovan.voltage.data.ScanResultEntry
 import io.tripovan.voltage.databinding.FragmentDashboardBinding
 import io.tripovan.voltage.utils.Constants
-import io.tripovan.voltage.utils.Constants.TAG
 import io.tripovan.voltage.utils.TimestampReducer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -273,7 +271,6 @@ class DashboardFragment : Fragment(),
             button.isEnabled = false
         } else {
             button.text = "Read"
-
 
             button.setOnClickListener {
                 val spinner = activity?.findViewById<View>(R.id.loadingPanel) as? ProgressBar
