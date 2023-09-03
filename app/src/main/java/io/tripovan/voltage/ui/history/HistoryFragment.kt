@@ -104,7 +104,7 @@ class HistoryFragment : Fragment(), OnChartValueSelectedListener {
                         it.capacity.toFloat()
                     )
                 )
-                val lineDataSet = LineDataSet(capacityTimeSeries, "Capacity, KWh")
+                val lineDataSet = LineDataSet(capacityTimeSeries, "Capacity, Ah")
                 lineDataSet.setDrawValues(false)
                 lineDataSet.color = lineColor
                 lineDataSet.setDrawHighlightIndicators(true)
@@ -125,7 +125,7 @@ class HistoryFragment : Fragment(), OnChartValueSelectedListener {
         historyChart.highlightValue(h)
         var longDate = TimestampReducer.floatToLongTs(e.x)
         val date = Date(longDate)
-        historyViewModel.updateText("$date\nCapacity: %.2f KWh".format(e.y))
+        historyViewModel.updateText("$date\nCapacity: %.2f Ah".format(e.y))
         App.currentTimestamp = longDate
         dashboardViewModel.clearSelectedCell()
     }

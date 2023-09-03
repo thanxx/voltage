@@ -27,8 +27,8 @@ import io.tripovan.voltage.communication.SocketManager
 import io.tripovan.voltage.communication.obd2.Volt2Obd2Impl
 import io.tripovan.voltage.data.ScanResultEntry
 import io.tripovan.voltage.databinding.FragmentDashboardBinding
+import io.tripovan.voltage.utils.BatteryInfo
 import io.tripovan.voltage.utils.Constants
-import io.tripovan.voltage.utils.Constants.TAG
 import io.tripovan.voltage.utils.TimestampReducer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -84,70 +84,7 @@ class DashboardFragment : Fragment(),
         }
 
 
-        val sharedPref = App.instance.getSharedPrefs()
-        val adapterAddress = sharedPref?.getString("adapter_address", null)
 
-        val button = binding.scan
-        try {
-            val bluetoothManager = App.instance.getBluetoothManager()
-            if (bluetoothManager != null) {
-                socketManager = App.instance.getBluetoothManager()
-            }
-        } catch (e: Exception) {
-            Toast.makeText(App.instance.applicationContext, e.message, Toast.LENGTH_SHORT).show()
-        }
-
-        if (adapterAddress == null) {
-            button.text = "Select OBD2 adapter in Settings"
-            button.setOnClickListener {
-                val navView: BottomNavigationView =
-                    requireActivity().findViewById(R.id.nav_view)
-                navView.selectedItemId = R.id.navigation_settings
-            }
-        }
-        if (socketManager == null) {
-            button.isEnabled = false
-        } else {
-            button.text = "Read"
-
-
-            button.setOnClickListener {
-                val spinner = activity?.findViewById<View>(R.id.loadingPanel) as? ProgressBar
-
-                GlobalScope.launch {
-
-                    var scan: ScanResultEntry? = null
-                    var retryCount = 3
-                    while (retryCount > 0) {
-                        withContext(Dispatchers.Main) {
-                            spinner?.visibility = View.VISIBLE
-                        }
-                        try {
-                            // todo select vehicle implementation depending on app settings
-                            scan = Volt2Obd2Impl().scan()
-
-                            if (scan.odometer > 0) {
-                                retryCount = 0
-                            }
-
-                        } catch (e: Exception) {
-                            e.message?.let { it1 -> App.instance.showToast(it1) }
-                            retryCount--
-                        }
-
-                        withContext(Dispatchers.Main) {
-                            updateUI(scan)
-                            spinner?.visibility = View.GONE
-                        }
-                    }
-
-                    if (scan != null) {
-                        App.database.scanResultDao().insert(scan)
-                        App.currentTimestamp = null
-                    }
-                }
-            }
-        }
 
         val typedValue = TypedValue()
         val theme: Resources.Theme = requireContext().theme
@@ -197,6 +134,7 @@ class DashboardFragment : Fragment(),
 
 
     private fun updateUI(scan: ScanResultEntry?) {
+        App.instance.updateVoltModel()
         if (scan != null) {
             val capacity = scan.capacity
             val socRawHd = scan.socRawHd
@@ -213,13 +151,15 @@ class DashboardFragment : Fragment(),
                 }
 
                 dashboardViewModel.updateScan(scan)
+                val batteryInfo = BatteryInfo(capacity)
                 dashboardViewModel.updateSummary(
                     String.format(
-                        "Date: %s \nOdometer: ~%s\nCapacity: %.3f KWh / %.2f%% \nSoC Raw HD: %.1f %%\nSoC Displayed: %.1f %%",
+                        "Date: %s \nOdometer: ~%s\nCapacity: %.1f Ah / %.1f Wh / %.2f%% \nSoC Raw HD: %.1f %%\nSoC Displayed: %.1f %%",
                         Date(scan.timestamp).toString(),
                         odometerText,
                         capacity,
-                        capacity / Constants.volt2InitialCapacity * 100,
+                        batteryInfo.getActualWattHours(),
+                        batteryInfo.getCapacityPercent(),
                         socRawHd,
                         socDisplayed
                     )
@@ -311,5 +251,74 @@ class DashboardFragment : Fragment(),
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        val sharedPref = App.instance.getSharedPrefs()
+        val adapterAddress = sharedPref?.getString("adapter_address", null)
 
+        val button = binding.scan
+        try {
+            socketManager = App.instance.getBluetoothManager()
+        } catch (e: Exception) {
+            Toast.makeText(App.instance.applicationContext, e.message, Toast.LENGTH_SHORT).show()
+        }
+
+        if (adapterAddress == null) {
+            button.text = "Select OBD2 adapter in Settings"
+            button.setOnClickListener {
+                val navView: BottomNavigationView =
+                    requireActivity().findViewById(R.id.nav_view)
+                navView.selectedItemId = R.id.navigation_settings
+            }
+        }
+        if (socketManager?.bluetoothSocket == null || !App.instance.isBtPermissionEnabled()) {
+            button.isEnabled = false
+        } else {
+            button.text = "Read"
+
+            button.setOnClickListener {
+                val spinner = activity?.findViewById<View>(R.id.loadingPanel) as? ProgressBar
+
+                GlobalScope.launch {
+
+                    var scan: ScanResultEntry? = null
+                    var retryCount = 3
+                    while (retryCount > 0) {
+                        withContext(Dispatchers.Main) {
+                            spinner?.visibility = View.VISIBLE
+                        }
+                        try {
+
+                            scan = Volt2Obd2Impl().scan()
+
+                            if (scan.odometer > 0 || retryCount >= 10) {
+                                retryCount = 0
+                            }
+
+                        } catch (e: Exception) {
+                            e.message?.let {
+                                if (it.contains("ERROR")) {
+                                    retryCount++
+                                    App.instance.showToast("Retrying...")
+                                } else {
+                                    App.instance.showToast(it)
+                                    retryCount--
+                                }
+                            }
+                        }
+
+                        withContext(Dispatchers.Main) {
+                            updateUI(scan)
+                            spinner?.visibility = View.GONE
+                        }
+                    }
+
+                    if (scan != null) {
+                        App.database.scanResultDao().insert(scan)
+                        App.currentTimestamp = null
+                    }
+                }
+            }
+        }
+    }
 }

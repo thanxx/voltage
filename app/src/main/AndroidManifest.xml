@@ -4,10 +4,8 @@
     package="io.tripovan.voltage">
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
 
     <application
         android:name=".App"
@@ -44,5 +42,9 @@
                 android:resource="@xml/file_paths" />
         </provider>
     </application>
-
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.SENDTO" /><data android:scheme="*" />
+        </intent>
+    </queries>
 </manifest>

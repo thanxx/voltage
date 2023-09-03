@@ -20,6 +20,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import io.tripovan.voltage.databinding.ActivityMainBinding
+import io.tripovan.voltage.utils.Constants
 
 
 class MainActivity : AppCompatActivity() {
@@ -37,28 +38,7 @@ class MainActivity : AppCompatActivity() {
 
         val navView: BottomNavigationView = binding.navView
 
-        // Check BT permissions
-        if (ContextCompat.checkSelfPermission(
-                this@MainActivity,
-                Manifest.permission.BLUETOOTH_CONNECT
-            ) == PackageManager.PERMISSION_DENIED
-        ) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                ActivityCompat.requestPermissions(
-                    this@MainActivity,
-                    arrayOf(Manifest.permission.BLUETOOTH_CONNECT),
-                    2
-                )
-                //return
-            }
-            // BT OK
-        } else {
-            Toast.makeText(
-                this@MainActivity,
-                "Bluetooth error, please check permissions",
-                Toast.LENGTH_SHORT
-            ).show()
-        }
+
 
 
         val sharedPref = App.instance.getSharedPrefs()
@@ -75,11 +55,14 @@ class MainActivity : AppCompatActivity() {
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
 
         navView.setupWithNavController(navController)
+
         if (!sharedPref.getString("adapter_address", null).isNullOrEmpty()) {
             navView.selectedItemId = R.id.navigation_dashboard
         }
 
     }
+
+
 
 
 

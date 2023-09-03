@@ -21,6 +21,6 @@ class SettingsViewModel : ViewModel() {
     }
 
     fun updateText(text: String) {
-        _selectedDevice.value = text
+        _selectedDevice.postValue(text)
     }
 }
