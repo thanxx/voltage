@@ -288,16 +288,23 @@ class DashboardFragment : Fragment(),
                             spinner?.visibility = View.VISIBLE
                         }
                         try {
-                            // todo select vehicle implementation depending on app settings
+
                             scan = Volt2Obd2Impl().scan()
 
-                            if (scan.odometer > 0) {
+                            if (scan.odometer > 0 || retryCount >= 10) {
                                 retryCount = 0
                             }
 
                         } catch (e: Exception) {
-                            e.message?.let { it1 -> App.instance.showToast(it1) }
-                            retryCount--
+                            e.message?.let {
+                                if (it.contains("ERROR")) {
+                                    retryCount++
+                                    App.instance.showToast("Retrying...")
+                                } else {
+                                    App.instance.showToast(it)
+                                    retryCount--
+                                }
+                            }
                         }
 
                         withContext(Dispatchers.Main) {
