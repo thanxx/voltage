@@ -113,7 +113,7 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
     private fun getCellsVoltages(): ArrayList<Double> {
 
         val cells = ArrayList<Double>()
-        for (i in 0..95) {
+            for (i in 0..95) {
 
             val cellResponse = App.socketManager!!.readObd(cellPids[i] + "1" + "\r\n")
             val decoded = decodeResponse(cellResponse, 2)
@@ -137,10 +137,10 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
         return decoded[decoded.size - 1].toDouble() * 100 / 255
     }
 
-    private fun getCapacity(): Double {
+    private fun getCapacityAh(): Double {
         val response = App.socketManager!!.readObd("2241A31" + "\r\n")
         val arr = response.split(" ")
-        return (BigInteger(arr[arr.size - 2] + arr[arr.size - 1], 16).toDouble()) / 30
+        return (BigInteger(arr[arr.size - 2] + arr[arr.size - 1], 16).toDouble()) / 10
     }
 
     private fun getVin(): String {
@@ -181,7 +181,7 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
 
         val voltages = getCellsVoltages().toDoubleArray()
         App.socketManager?.readObd("ATSH7E4 \r\n")
-        val capacity = getCapacity()
+        val capacity = getCapacityAh()
         val socRawHd = getSocRawHd()
         val socDisplayed = getSocRawDisplayed()
 
@@ -189,7 +189,6 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
         val max = voltages.max()
         val avg = voltages.average()
         val spread = max - min
-
 
 
         return ScanResultEntry(

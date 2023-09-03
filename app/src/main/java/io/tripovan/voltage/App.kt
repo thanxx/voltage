@@ -20,10 +20,12 @@ import kotlinx.coroutines.withContext
 
 class App : Application() {
     companion object {
-
-        var currentTimestamp: Long? = null
         lateinit var instance: App
             private set
+
+        lateinit var voltModel: Constants.VoltModel
+        var currentTimestamp: Long? = null
+
         var socketManager: SocketManager? = null
         lateinit var database: AppDatabase
         lateinit var appVersion: String
@@ -38,7 +40,7 @@ class App : Application() {
         instance = this
 
         database = Room.databaseBuilder(
-            applicationContext, AppDatabase::class.java, "voltageDB1"
+            applicationContext, AppDatabase::class.java, "voltageDB0.1"
         ).build()
 
         val packageManager = this.packageManager
@@ -83,18 +85,35 @@ class App : Application() {
         }
     }
 
-    fun getSharedPrefs() : SharedPreferences? {
+    fun getSharedPrefs(): SharedPreferences? {
         return this.getSharedPreferences("voltage_settings", Context.MODE_PRIVATE)
     }
 
-    fun isBtPermissionEnabled():Boolean {
-        return ContextCompat.checkSelfPermission(
+    fun isBtPermissionEnabled(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            (ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.BLUETOOTH
             ) == PackageManager.PERMISSION_GRANTED
-            && ContextCompat.checkSelfPermission(
+                    && ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.BLUETOOTH_CONNECT
-            ) == PackageManager.PERMISSION_GRANTED
+            ) == PackageManager.PERMISSION_GRANTED)
+        } else true
+    }
+
+    fun updateVoltModel() {
+        val prefs = getSharedPrefs()
+        var model = prefs?.getString("volt_model", null)
+        if (model != null) {
+            when (model) {
+                "2016-2019" -> voltModel = Constants.Volt20162019
+                "2015" -> voltModel = Constants.Volt2015
+                "2013-2014" -> voltModel = Constants.Volt20132014
+                "2011-2012" -> voltModel = Constants.Volt20112012
+            }
+        } else {
+            voltModel = Constants.Volt20162019
+        }
     }
 }

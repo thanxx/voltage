@@ -27,6 +27,7 @@ import io.tripovan.voltage.communication.SocketManager
 import io.tripovan.voltage.communication.obd2.Volt2Obd2Impl
 import io.tripovan.voltage.data.ScanResultEntry
 import io.tripovan.voltage.databinding.FragmentDashboardBinding
+import io.tripovan.voltage.utils.BatteryInfo
 import io.tripovan.voltage.utils.Constants
 import io.tripovan.voltage.utils.TimestampReducer
 import kotlinx.coroutines.Dispatchers
@@ -133,6 +134,7 @@ class DashboardFragment : Fragment(),
 
 
     private fun updateUI(scan: ScanResultEntry?) {
+        App.instance.updateVoltModel()
         if (scan != null) {
             val capacity = scan.capacity
             val socRawHd = scan.socRawHd
@@ -149,13 +151,15 @@ class DashboardFragment : Fragment(),
                 }
 
                 dashboardViewModel.updateScan(scan)
+                val batteryInfo = BatteryInfo(capacity)
                 dashboardViewModel.updateSummary(
                     String.format(
-                        "Date: %s \nOdometer: ~%s\nCapacity: %.3f KWh / %.2f%% \nSoC Raw HD: %.1f %%\nSoC Displayed: %.1f %%",
+                        "Date: %s \nOdometer: ~%s\nCapacity: %.1f Ah / %.1f Wh / %.2f%% \nSoC Raw HD: %.1f %%\nSoC Displayed: %.1f %%",
                         Date(scan.timestamp).toString(),
                         odometerText,
                         capacity,
-                        capacity / Constants.volt2InitialCapacity * 100,
+                        batteryInfo.getActualWattHours(),
+                        batteryInfo.getCapacityPercent(),
                         socRawHd,
                         socDisplayed
                     )

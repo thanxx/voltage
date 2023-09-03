@@ -33,6 +33,7 @@ import io.tripovan.voltage.utils.MailUtils
 class SettingsFragment : Fragment() {
     private lateinit var devicesView: RecyclerView
     private lateinit var distanceUnitsSpinner: Spinner
+    private lateinit var voltYearSpinner: Spinner
     private lateinit var adapter: DevicesAdapter
     private lateinit var settingsViewModel: SettingsViewModel
     private var _binding: FragmentSettingsBinding? = null
@@ -50,8 +51,10 @@ class SettingsFragment : Fragment() {
         val root: View = binding.root
 
 
+        App.voltModel = Constants.Volt20162019
 
         distanceUnitsSpinner = binding.distanceUnits
+        voltYearSpinner = binding.voltYear
         devicesView = binding.devices
         adapter = DevicesAdapter(emptyList(), this)
         devicesView.adapter = adapter
@@ -74,6 +77,7 @@ class SettingsFragment : Fragment() {
         val units = sharedPref?.getString("distance_units", unitsList[0])
         distanceUnitsSpinner.setSelection(unitsList.indexOf(units))
 
+
         distanceUnitsSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>,
@@ -92,7 +96,32 @@ class SettingsFragment : Fragment() {
             override fun onNothingSelected(p0: AdapterView<*>?) {}
         }
 
-        val sendLogsTextView = binding.exportLogs as TextView
+        val yearsList = resources.getStringArray(R.array.volt_models).toList()
+        val model = sharedPref?.getString("volt_model", yearsList[3])
+        voltYearSpinner.setSelection(yearsList.indexOf(model))
+        voltYearSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                val selectedItem: String = parent.getItemAtPosition(position).toString()
+                if (selectedItem != model) {
+                    val editor = sharedPref?.edit()
+                    editor?.putString("volt_model", selectedItem)
+                    editor?.apply()
+                }
+                App.instance.updateVoltModel()
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {}
+        }
+
+
+
+
+        val sendLogsTextView = binding.exportLogs
 
         sendLogsTextView.setOnClickListener {
             try {
