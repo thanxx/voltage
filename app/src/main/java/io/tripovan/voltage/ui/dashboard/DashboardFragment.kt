@@ -154,11 +154,11 @@ class DashboardFragment : Fragment(),
                 val batteryInfo = BatteryInfo(capacity)
                 dashboardViewModel.updateSummary(
                     String.format(
-                        "Date: %s \nOdometer: ~%s\nCapacity: %.1f Ah / %.1f Wh / %.2f%% \nSoC Raw HD: %.1f %%\nSoC Displayed: %.1f %%",
+                        "Date: %s \nOdometer: ~%s\nCapacity: %.2f Ah / %.2f kWh / %.2f%% \nSoC Raw HD: %.1f %%\nSoC Displayed: %.1f %%",
                         Date(scan.timestamp).toString(),
                         odometerText,
                         capacity,
-                        batteryInfo.getActualWattHours(),
+                        batteryInfo.getActualWattHours() / 1000,
                         batteryInfo.getCapacityPercent(),
                         socRawHd,
                         socDisplayed
@@ -308,7 +308,9 @@ class DashboardFragment : Fragment(),
                         }
 
                         withContext(Dispatchers.Main) {
-                            updateUI(scan)
+                            if (context != null) {
+                                updateUI(scan)
+                            }
                             spinner?.visibility = View.GONE
                         }
                     }
