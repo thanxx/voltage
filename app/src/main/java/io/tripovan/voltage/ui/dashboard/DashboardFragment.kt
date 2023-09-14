@@ -147,14 +147,18 @@ class DashboardFragment : Fragment(),
                 val odometerText = if (units == unitsList[0]) {
                     "${scan.odometer} $units"
                 } else {
-                    String.format("%.2f $units", scan.odometer * 0.62137119)
+                    String.format("%s $units", (scan.odometer * 0.62137119).toInt())
                 }
 
                 dashboardViewModel.updateScan(scan)
                 val batteryInfo = BatteryInfo(capacity)
                 dashboardViewModel.updateSummary(
                     String.format(
-                        "Date: %s \nOdometer: ~%s\nCapacity: %.2f Ah / %.2f kWh / %.2f%% \nSoC Raw HD: %.1f %%\nSoC Displayed: %.1f %%",
+                                "Date: %s \n" +
+                                "Odometer: ~%\n" +
+                                "Capacity: %.2f Ah / %.2f kWh / %.2f%% \n" +
+                                "SoC Raw: %.1f %%" +
+                                " / Displayed: %.1f %%",
                         Date(scan.timestamp).toString(),
                         odometerText,
                         capacity,
@@ -165,7 +169,7 @@ class DashboardFragment : Fragment(),
                     )
                 )
                 dashboardViewModel.updateCellsSummary(String.format(
-                    "Min: %.3f V #%s\nAvg: %.3f V\nMax: %.3f V #%s",
+                    "Min: %.3f V #%s / Avg: %.3f V / Max: %.3f V #%s",
                     scan.minCell,
                     scan.cells.indices.minBy { scan.cells[it] } + 1,
                     scan.avgCell,
@@ -222,16 +226,14 @@ class DashboardFragment : Fragment(),
                 if (App.currentTimestamp != null) {
 
                     val list = App.database.scanResultDao().getAllScanResults()
-                    Log.i("", list[list.lastIndex].timestamp.toString())
-
                     scan =
                         list.find { TimestampReducer.reduce(it.timestamp) == App.currentTimestamp }
                     if (scan == null) {
                         scan =
-                            list.find { TimestampReducer.reduce(it.timestamp) == (App.currentTimestamp!! + 1000) } // Search the next second due to MPAndroidChart inaccuracy }
+                            list.find { TimestampReducer.reduce(it.timestamp) == (App.currentTimestamp!! + 1000) }
+                        // Search the next second due to MPAndroidChart inaccuracy
                     }
                 } else {
-
                     val results = App.database.scanResultDao().getAllScanResults()
                     if (results.isNotEmpty()) {
                         scan = App.database.scanResultDao().getAllScanResults().last()
@@ -241,8 +243,7 @@ class DashboardFragment : Fragment(),
                 e.message?.let { it1 -> App.instance.showToast(it1) }
             }
             withContext(Dispatchers.Main) {
-                if (scan != null) {
-
+                if (scan != null && context != null) {
                     updateUI(scan)
                 } else {
                     dashboardViewModel.updateSelectedCell("")
@@ -291,8 +292,9 @@ class DashboardFragment : Fragment(),
 
                             scan = Volt2Obd2Impl().scan()
 
-                            if (scan.odometer > 0 || retryCount >= 10) {
-                                retryCount = 0
+                            if (retryCount >= 10) {
+                                App.instance.showToast("Gave up retrying after 10 times")
+                                break
                             }
 
                         } catch (e: Exception) {

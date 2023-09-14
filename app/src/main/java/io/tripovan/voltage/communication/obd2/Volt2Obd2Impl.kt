@@ -157,12 +157,18 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
     }
 
     private fun getOdometer(): Int {
-        val arr = decodeResponse(App.socketManager!!.readObd("2234B2" + "\r\n"), 4)
-        val a = arr[arr.size - 4]
-        val b = arr[arr.size - 3]
-        val c = arr[arr.size - 2]
-        val d = arr[arr.size - 1]
-        return (((a * 2.0.pow(24)) + (b * 2.0.pow(16)) + (c * 2.0.pow(8)) + d) / 64).toInt()
+        return try {
+            val arr = decodeResponse(App.socketManager!!.readObd("2234B2" + "\r\n"), 4)
+            val a = arr[arr.size - 4]
+            val b = arr[arr.size - 3]
+            val c = arr[arr.size - 2]
+            val d = arr[arr.size - 1]
+            (((a * 2.0.pow(24)) + (b * 2.0.pow(16)) + (c * 2.0.pow(8)) + d) / 64).toInt()
+        } catch (e: Obd2DecodeException) {
+            e.message?.let {  Log.i(TAG, it)}
+            0
+        }
+
     }
 
     override suspend fun scan(): ScanResultEntry {

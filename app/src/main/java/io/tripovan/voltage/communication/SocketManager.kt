@@ -10,10 +10,10 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 
-
+private const val TAG = "SocketManager"
 class SocketManager constructor(private val address: String) {
 
-    private val TAG = Constants.TAG
+
     private var inputStream: InputStream
     private var outputStream: OutputStream
 
@@ -60,7 +60,8 @@ class SocketManager constructor(private val address: String) {
                 device.address == address
             }
             device.let {
-                return device?.createRfcommSocketToServiceRecord(
+                Log.i(TAG, "BT Device: ${it?.name}")
+                return it?.createRfcommSocketToServiceRecord(
                     device?.uuids?.get(0)?.uuid
                 )
             }
@@ -72,6 +73,8 @@ class SocketManager constructor(private val address: String) {
 
     @SuppressLint("MissingPermission")
     fun readObd(cmd: String): String {
+        Log.i("readObd", cmd)
+
         if (!bluetoothSocket.isConnected) {
             bluetoothSocket.connect()
         }
@@ -80,7 +83,6 @@ class SocketManager constructor(private val address: String) {
 
         // Send
         try {
-            Log.i(TAG, cmd)
             outputStream.write(cmd.toByteArray())
         } catch (e: Exception) {
             e.message?.let {
@@ -116,6 +118,7 @@ class SocketManager constructor(private val address: String) {
         data = data.replace("\r", "")
         data = data.replace("SEARCHING...", "")
         Log.i(TAG, data)
+        Log.i("readObd", "end")
         return data
     }
 }
