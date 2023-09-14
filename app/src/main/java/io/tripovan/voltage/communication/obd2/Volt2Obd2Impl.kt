@@ -164,8 +164,8 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
             val c = arr[arr.size - 2]
             val d = arr[arr.size - 1]
             (((a * 2.0.pow(24)) + (b * 2.0.pow(16)) + (c * 2.0.pow(8)) + d) / 64).toInt()
-        } catch (e: Obd2DecodeException) {
-            e.message?.let {  Log.i(TAG, it)}
+        } catch (e: Exception) {
+            e.message?.let {  Log.e(TAG, it)}
             0
         }
 
@@ -176,11 +176,21 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
         var vin = ""
         var odometer = 0
 
-        try {
-            vin = getVin()
-            odometer = getOdometer()
-        } catch (e: Exception) {
-            e.message?.let { Log.e(TAG, it) }
+        var retryCount = 10
+        while (retryCount > 0) {
+            try {
+                vin = getVin()
+                Log.i("", "$retryCount")
+                odometer = getOdometer()
+                if (odometer == 0) {
+                    retryCount--
+                } else {
+                    break
+                }
+            } catch (e: Exception) {
+                retryCount--
+                e.message?.let { Log.e(TAG, it) }
+            }
         }
 
         App.socketManager?.readObd("ATSH7E7 \r\n")

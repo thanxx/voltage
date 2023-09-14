@@ -118,7 +118,6 @@ class SocketManager constructor(private val address: String) {
         data = data.replace("\r", "")
         data = data.replace("SEARCHING...", "")
         Log.i(TAG, data)
-        Log.i("readObd", "end")
         return data
     }
 }

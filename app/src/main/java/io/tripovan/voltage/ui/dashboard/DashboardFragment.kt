@@ -144,18 +144,18 @@ class DashboardFragment : Fragment(),
                 val unitsList = resources.getStringArray(R.array.distance_units).toList()
                 val units = sharedPref?.getString("distance_units", unitsList[0])
 
-                val odometerText = if (units == unitsList[0]) {
+                val odometerText = if (scan.odometer > 0) if (units == unitsList[0]) {
                     "${scan.odometer} $units"
                 } else {
                     String.format("%s $units", (scan.odometer * 0.62137119).toInt())
-                }
+                } else ""
 
                 dashboardViewModel.updateScan(scan)
                 val batteryInfo = BatteryInfo(capacity)
                 dashboardViewModel.updateSummary(
                     String.format(
                                 "Date: %s \n" +
-                                "Odometer: ~%\n" +
+                                "Odometer: ~%s\n" +
                                 "Capacity: %.2f Ah / %.2f kWh / %.2f%% \n" +
                                 "SoC Raw: %.1f %%" +
                                 " / Displayed: %.1f %%",
@@ -289,14 +289,8 @@ class DashboardFragment : Fragment(),
                             spinner?.visibility = View.VISIBLE
                         }
                         try {
-
                             scan = Volt2Obd2Impl().scan()
-
-                            if (retryCount >= 10) {
-                                App.instance.showToast("Gave up retrying after 10 times")
-                                break
-                            }
-
+                            break
                         } catch (e: Exception) {
                             e.message?.let {
                                 if (it.contains("ERROR")) {
@@ -309,12 +303,17 @@ class DashboardFragment : Fragment(),
                             }
                         }
 
-                        withContext(Dispatchers.Main) {
-                            if (context != null) {
-                                updateUI(scan)
-                            }
-                            spinner?.visibility = View.GONE
+
+                        if (retryCount >= 10) {
+                            App.instance.showToast("Gave up retrying")
+                            break
                         }
+                    }
+                    withContext(Dispatchers.Main) {
+                        if (context != null) {
+                            updateUI(scan)
+                        }
+                        spinner?.visibility = View.GONE
                     }
 
                     if (scan != null) {

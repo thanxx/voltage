@@ -14,11 +14,9 @@ open class Obd2Commons {
     }
 
     fun initObd() {
-        if (socketManager.bluetoothSocket.isConnected) {
-            socketManager.readObd(obdAtz)
-            socketManager.readObd(obdAte)
-            socketManager.readObd(obdAtsp)
-        }
+        socketManager.readObd(obdAtz)
+        socketManager.readObd(obdAte)
+        socketManager.readObd(obdAtsp)
     }
 
     fun decodeResponse(input: String, size: Int): ArrayList<Int> {
