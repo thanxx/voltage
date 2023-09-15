@@ -128,6 +128,11 @@ class DashboardFragment : Fragment(),
             barChart.setPinchZoom(false)
 
             barChart.invalidate()
+
+            val parentHeight = (barChart.parent as? View)?.height ?: 0
+            val desiredHeight = (parentHeight * 0.4).toInt()
+            barChart.layoutParams.height = desiredHeight
+            barChart.requestLayout()
         }
         return root
     }
