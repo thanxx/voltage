@@ -105,15 +105,17 @@ class App : Application() {
     fun updateVoltModel() {
         val prefs = getSharedPrefs()
         var model = prefs?.getString("volt_model", null)
+        val modelsList = resources.getStringArray(R.array.volt_models).toList()
         if (model != null) {
             when (model) {
-                "2016-2019" -> voltModel = Constants.Volt20162019
-                "2015" -> voltModel = Constants.Volt2015
-                "2013-2014" -> voltModel = Constants.Volt20132014
-                "2011-2012" -> voltModel = Constants.Volt20112012
+                modelsList[4] -> voltModel = Constants.Volt2019
+                modelsList[3] -> voltModel = Constants.Volt20162018
+                modelsList[2] -> voltModel = Constants.Volt2015
+                modelsList[1] -> voltModel = Constants.Volt20132014
+                modelsList[0] -> voltModel = Constants.Volt20112012
             }
         } else {
-            voltModel = Constants.Volt20162019
+            voltModel = Constants.Volt20162018
         }
     }
 }

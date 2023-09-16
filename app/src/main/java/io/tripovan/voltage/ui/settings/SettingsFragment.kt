@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.text.util.Linkify
+import android.text.util.Linkify.TransformFilter
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -28,6 +29,7 @@ import io.tripovan.voltage.ui.settings.devices_list.DevicesAdapter
 import io.tripovan.voltage.utils.Constants
 import io.tripovan.voltage.utils.LoggingUtils
 import io.tripovan.voltage.utils.MailUtils
+import java.util.regex.Pattern
 
 
 class SettingsFragment : Fragment() {
@@ -51,7 +53,7 @@ class SettingsFragment : Fragment() {
         val root: View = binding.root
 
 
-        App.voltModel = Constants.Volt20162019
+        App.voltModel = Constants.Volt20162018
 
         distanceUnitsSpinner = binding.distanceUnits
         voltYearSpinner = binding.voltYear
@@ -69,9 +71,11 @@ class SettingsFragment : Fragment() {
         }
 
 
+        val topicText = "GM-Volt Forum Topic"
         val appInfo = binding.appInfo
-        appInfo.text = App.appVersion + "\nhttps://github.com/thanxx/voltage"
-        Linkify.addLinks(appInfo, Linkify.WEB_URLS)
+        appInfo.text = App.appVersion + "\n$topicText"
+
+        addLink(appInfo, "$topicText",  "https://www.gm-volt.com/threads/an-open-source-android-app-for-gen-2-volt.346938/")
 
         val unitsList = resources.getStringArray(R.array.distance_units).toList()
         val units = sharedPref?.getString("distance_units", unitsList[0])
@@ -141,7 +145,7 @@ class SettingsFragment : Fragment() {
     private fun showFirstRunAlertDialog() {
         val alertDialogBuilder = AlertDialog.Builder(requireContext())
         alertDialogBuilder.setTitle("Welcome!")
-        alertDialogBuilder.setMessage("This app was tested with the 2016 Volt. If you experience errors, please send logs, open an issue on GitHub (in Settings). Also, this app is open source, so you are welcome to make a pull request or provide feedback")
+        alertDialogBuilder.setMessage("To start using the app, make sure you have paired an OBD2 adapter in your phone settings. If you experience errors, please send logs or leave a comment on the GM-Volt forum topic (link in settings).")
         alertDialogBuilder.setPositiveButton("OK") { _, _ ->
             var editor = App.instance.getSharedPrefs()?.edit()
             editor?.putBoolean("firstRun", false)
@@ -225,6 +229,15 @@ class SettingsFragment : Fragment() {
         ActivityCompat.requestPermissions(requireActivity(), permissionsArray, 1)
 
     }
-
+    private fun addLink(
+        textView: TextView?, patternToMatch: String?,
+        link: String
+    ) {
+        val filter = TransformFilter { match, url -> link }
+        Linkify.addLinks(
+            textView!!, Pattern.compile(patternToMatch), null, null,
+            filter
+        )
+    }
 
 }

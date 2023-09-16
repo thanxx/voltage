@@ -143,6 +143,12 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
         return (BigInteger(arr[arr.size - 2] + arr[arr.size - 1], 16).toDouble()) / 10
     }
 
+    private fun getCapacityAh2019(): Double {
+        val response = App.socketManager!!.readObd("2245FF1" + "\r\n")
+        val arr = response.split(" ")
+        return (BigInteger(arr[arr.size - 2] + arr[arr.size - 1], 16).toDouble()) / 100
+    }
+
     private fun getVin(): String {
         val response = App.socketManager!!.readObd("0902" + "\r\n")
         val cut1 = response.split("49 02 01 ")[1]
@@ -197,7 +203,12 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
 
         val voltages = getCellsVoltages().toDoubleArray()
         App.socketManager?.readObd("ATSH7E4 \r\n")
-        val capacity = getCapacityAh()
+
+        val capacity = if (App.voltModel == Constants.Volt2019) {
+            getCapacityAh2019()
+        } else {
+            getCapacityAh()
+        }
         val socRawHd = getSocRawHd()
         val socDisplayed = getSocRawDisplayed()
 

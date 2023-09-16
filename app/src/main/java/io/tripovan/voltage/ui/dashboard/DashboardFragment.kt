@@ -197,15 +197,28 @@ class DashboardFragment : Fragment(),
 
             var group = 1
 
-            val section = when {
-                cellNo > 84 -> 3.also { group = 7 }
-                cellNo > 72 -> 3.also { group = 6 }
-                cellNo > 56 -> 2.also { group = 5 }
-                cellNo > 44 -> 2.also { group = 4 }
-                cellNo > 28 -> 1.also { group = 3 }
-                cellNo > 16 -> 1.also { group = 2 }
-                else -> 1
-            }
+            val section = if (App.voltModel == Constants.Volt2019 || App.voltModel == Constants.Volt20162018)
+                    when {
+                        cellNo >= 84 -> 3.also { group = 7 }
+                        cellNo >= 72 -> 3.also { group = 6 }
+                        cellNo >= 56 -> 2.also { group = 5 }
+                        cellNo >= 44 -> 2.also { group = 4 }
+                        cellNo >= 28 -> 1.also { group = 3 }
+                        cellNo >= 16 -> 1.also { group = 2 }
+                        else -> 1
+                    }
+                 else
+                    when {
+                        cellNo >= 84 -> 3.also { group = 9 }
+                        cellNo >= 78 -> 3.also { group = 8 }
+                        cellNo >= 66 -> 3.also { group = 7 }
+                        cellNo >= 54 -> 3.also { group = 6 }
+                        cellNo >= 42 -> 2.also { group = 5 }
+                        cellNo >= 30 -> 2.also { group = 4 }
+                        cellNo >= 18 -> 1.also { group = 3 }
+                        cellNo >= 6 -> 1.also { group = 2 }
+                        else -> 1
+                }
 
             dashboardViewModel.updateSelectedCell(
                 String.format(
