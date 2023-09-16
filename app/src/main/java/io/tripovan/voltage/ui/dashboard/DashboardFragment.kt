@@ -153,7 +153,7 @@ class DashboardFragment : Fragment(),
                     "${scan.odometer} $units"
                 } else {
                     String.format("%s $units", (scan.odometer * 0.62137119).toInt())
-                } else ""
+                } else "[not available now]"
 
                 dashboardViewModel.updateScan(scan)
                 val batteryInfo = BatteryInfo(capacity)
