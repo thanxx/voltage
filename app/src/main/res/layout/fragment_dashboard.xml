@@ -15,6 +15,7 @@
         android:layout_marginTop="40sp"
 
         android:textSize="16sp"
+        android:lineSpacingExtra="5sp"
         app:layout_constraintBottom_toTopOf="@id/cells_summary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

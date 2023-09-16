@@ -10,6 +10,8 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.room.Room
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import io.tripovan.voltage.communication.SocketManager
 import io.tripovan.voltage.data.AppDatabase
 import io.tripovan.voltage.utils.Constants
@@ -39,9 +41,16 @@ class App : Application() {
         super.onCreate()
         instance = this
 
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE ScanResults ADD COLUMN internalResistance REAL NOT NULL DEFAULT 0.0")
+                database.execSQL("ALTER TABLE ScanResults ADD COLUMN hvIsolation INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         database = Room.databaseBuilder(
             applicationContext, AppDatabase::class.java, "voltageDB0.1"
-        ).build()
+        ).addMigrations(MIGRATION_2_3).build()
 
         val packageManager = this.packageManager
         val packageName = this.packageName

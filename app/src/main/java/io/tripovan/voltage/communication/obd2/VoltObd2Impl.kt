@@ -7,7 +7,7 @@ import io.tripovan.voltage.utils.Constants
 import java.math.BigInteger
 import kotlin.math.pow
 
-class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
+class VoltObd2Impl : VehicleScanResultsProvider, Obd2Commons() {
 
     private val TAG = Constants.TAG
 
@@ -149,6 +149,18 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
         return (BigInteger(arr[arr.size - 2] + arr[arr.size - 1], 16).toDouble()) / 100
     }
 
+    private fun getInternalResistance(): Double {
+        val response = App.socketManager!!.readObd("2240E91" + "\r\n")
+        val arr = response.split(" ")
+        return (BigInteger(arr[arr.size - 2] + arr[arr.size - 1], 16).toDouble()) / 2
+    }
+
+    private fun getHvIsolation(): Int {
+        val response = App.socketManager!!.readObd("2243A6" + "\r\n")
+        val arr = response.split(" ")
+        return (BigInteger( arr[arr.size - 1], 16).toInt()) * 25
+    }
+
     private fun getVin(): String {
         val response = App.socketManager!!.readObd("0902" + "\r\n")
         val cut1 = response.split("49 02 01 ")[1]
@@ -183,10 +195,23 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
         var odometer = 0
 
         var retryCount = 10
+//        while (retryCount > 0) {
+//            try {
+//                vin = getVin()
+//                if (vin == "") {
+//                    retryCount--
+//                } else {
+//                    break
+//                }
+//            } catch (e: Exception) {
+//                retryCount--
+//                e.message?.let { Log.e(TAG, it) }
+//            }
+//        }
+
+        retryCount = 10
         while (retryCount > 0) {
             try {
-                vin = getVin()
-                Log.i("", "$retryCount")
                 odometer = getOdometer()
                 if (odometer == 0) {
                     retryCount--
@@ -204,11 +229,22 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
         val voltages = getCellsVoltages().toDoubleArray()
         App.socketManager?.readObd("ATSH7E4 \r\n")
 
-        val capacity = if (App.voltModel == Constants.Volt2019) {
-            getCapacityAh2019()
+        var capacity = 0.0
+        var internalResistance = 0.0
+
+        if (App.voltModel == Constants.Volt2019) {
+            capacity = getCapacityAh2019()
         } else {
-            getCapacityAh()
+            capacity = getCapacityAh()
+            internalResistance = getInternalResistance()
         }
+
+        Log.e("IR", "Internal resistance: $internalResistance")
+
+        val hvIsolation = getHvIsolation()
+
+        Log.e("HV", "HV isolation: $hvIsolation")
+
         val socRawHd = getSocRawHd()
         val socDisplayed = getSocRawDisplayed()
 
@@ -228,6 +264,8 @@ class Volt2Obd2Impl : VehicleScanResultsProvider, Obd2Commons() {
             socRawHd = socRawHd,
             capacity = capacity,
             odometer = odometer.toLong(),
+            internalResistance = internalResistance,
+            hvIsolation = hvIsolation,
             vin = vin,
             timestamp = System.currentTimeMillis()
         )

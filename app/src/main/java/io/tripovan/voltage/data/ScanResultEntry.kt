@@ -16,5 +16,7 @@ class ScanResultEntry(
     val minCell: Double,
     val maxCell: Double,
     val avgCell: Double,
-    val cellSpread: Double
+    val cellSpread: Double,
+    val internalResistance: Double,
+    val hvIsolation: Int
 )

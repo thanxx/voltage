@@ -3,7 +3,6 @@ package io.tripovan.voltage.ui.dashboard
 import android.content.res.Resources
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
@@ -24,7 +23,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import io.tripovan.voltage.App
 import io.tripovan.voltage.R
 import io.tripovan.voltage.communication.SocketManager
-import io.tripovan.voltage.communication.obd2.Volt2Obd2Impl
+import io.tripovan.voltage.communication.obd2.VoltObd2Impl
 import io.tripovan.voltage.data.ScanResultEntry
 import io.tripovan.voltage.databinding.FragmentDashboardBinding
 import io.tripovan.voltage.utils.BatteryInfo
@@ -153,24 +152,28 @@ class DashboardFragment : Fragment(),
                     "${scan.odometer} $units"
                 } else {
                     String.format("%s $units", (scan.odometer * 0.62137119).toInt())
-                } else "[not available now]"
+                } else " [not available for this reading]"
 
                 dashboardViewModel.updateScan(scan)
                 val batteryInfo = BatteryInfo(capacity)
                 dashboardViewModel.updateSummary(
                     String.format(
                                 "Date: %s \n" +
-                                "Odometer: ~%s\n" +
+                                "Odometer: %s\n" +
                                 "Capacity: %.2f Ah / %.2f kWh / %.2f%% \n" +
                                 "SoC Raw: %.1f %%" +
-                                " / Displayed: %.1f %%",
+                                " / Displayed: %.1f %%\n" +
+                                "Internal resistance: %.1f mOhm\n" +
+                                "HV isolation: %s kOhm",
                         Date(scan.timestamp).toString(),
                         odometerText,
                         capacity,
                         batteryInfo.getActualWattHours() / 1000,
                         batteryInfo.getCapacityPercent(),
                         socRawHd,
-                        socDisplayed
+                        socDisplayed,
+                        scan.internalResistance,
+                        scan.hvIsolation
                     )
                 )
                 dashboardViewModel.updateCellsSummary(String.format(
@@ -307,7 +310,7 @@ class DashboardFragment : Fragment(),
                             spinner?.visibility = View.VISIBLE
                         }
                         try {
-                            scan = Volt2Obd2Impl().scan()
+                            scan = VoltObd2Impl().scan()
                             break
                         } catch (e: Exception) {
                             e.message?.let {

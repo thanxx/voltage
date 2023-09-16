@@ -4,7 +4,7 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
-@Database(entities = [ScanResultEntry::class], version = 2, exportSchema = false)
+@Database(entities = [ScanResultEntry::class], version = 3, exportSchema = false)
 @TypeConverters(TypeConverter::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun scanResultDao(): ScanResultDao

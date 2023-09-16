@@ -6,17 +6,12 @@ import io.tripovan.voltage.communication.SocketManager
 open class Obd2Commons {
     private val socketManager: SocketManager = App.socketManager!!
 
-
-    companion object {
-        const val obdAtz = "ATZ \r\n"
-        const val obdAte = "ATE0 \r\n"
-        const val obdAtsp = "ATSP0 \r\n"
-    }
-
     fun initObd() {
-        socketManager.readObd(obdAtz)
-        socketManager.readObd(obdAte)
-        socketManager.readObd(obdAtsp)
+        socketManager.readObd("ATZ \r\n")
+        socketManager.readObd("ATE0 \r\n")
+        socketManager.readObd("ATSP0 \r\n")
+        socketManager.readObd("ATL0 \r\n")
+        socketManager.readObd("ATS1 \r\n")
     }
 
     fun decodeResponse(input: String, size: Int): ArrayList<Int> {
