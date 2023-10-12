@@ -10,14 +10,6 @@ An Android app for reading ECU data (battery, etc) from the GM Chevrolet Volt vi
 - Storage of every record in a time-series database (for the capacity chart & future aggregations)
 - Historical chart for battery capacity
 
-## TODO / With the help of the community and contributors, it would be cool to:
-- Collect other useful PIDs https://github.com/thanxx/voltage/issues/26
-- Implement `VehicleScanResultsProvider` for Volt 1, Bolt, etc. https://github.com/thanxx/voltage/issues/7
-- Select Vehicle by VIN in Settings (in case when a user has more than one)
-- Historical and statistical aggregation of collected cell data. Visualize other useful values https://github.com/thanxx/voltage/issues/16
-- if possible: Prediction of cell degradation, BECM, and other failures https://github.com/thanxx/voltage/issues/7
-- your ideas are welcome
-
 
 
 
